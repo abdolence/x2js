@@ -1,0 +1,67 @@
+<html>
+<head>
+    <script type="text/javascript" src="xml2json.js"></script>
+</head>
+<body>
+Test html
+<script type="text/javascript">
+    var X2JS = new X2JS();
+
+    // JSON to DOM
+    var xmlDoc = X2JS.json2xml(
+        {
+            MyRoot : {
+                MyChild : 'my_child_value',
+                MyAnotherChild: 10,
+                MyArray : [ 'test', 'test2' ],
+                MyArrayRecords : [ 
+                    {
+                        ttt : 'vvvv' 
+                    },
+                    {
+                        ttt : 'vvvv2' 
+                    }                     
+                ],
+            }
+        }
+    );
+    
+    // JSON to XML string
+    var xmlDocStr = X2JS.json2xml_str(
+        {
+            MyRoot : {
+                MyChild : 'my_child_value',
+                MyAnotherChild: 10,
+                MyArray : [ 'test', 'test2' ],
+                MyArrayRecords : [ 
+                    {
+                        ttt : 'vvvv' 
+                    },
+                    {
+                        ttt : 'vvvv2' 
+                    }                     
+                ],
+            }
+        }
+    );
+    
+    alert(xmlDocStr);
+    
+
+    // XML string to JSON    
+    var xmlText = "<MyOperation><test>value</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
+    var jsonObj = X2JS.xml_str2json( xmlText );
+    alert (jsonObj.MyOperation.test);
+
+    // XML/DOM to JSON
+    
+    var xmlText = "<MyOperation><test>value</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>"
+    var parser=new DOMParser();
+    xmlDoc=parser.parseFromString(xmlText,"text/xml");
+    
+    var jsonObj = X2JS.xml2json( xmlDoc );
+    alert (jsonObj.MyOperation.test);
+        
+</script>
+</body>
+</html>

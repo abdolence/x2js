@@ -146,27 +146,5 @@ function X2JS() {
 		var parser=new DOMParser();
 		var xmlStr = this.json2xml_str (jsonObj);
 		return parser.parseFromString( xmlStr, "text/xml" );
-	}
-
-	this.testSamples = function() {
-		var xmlText = "<MyOperation><test>value</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>"
-		var parser=new DOMParser();
-		xmlDoc=parser.parseFromString(xmlText,"text/xml");
-			
-		var resultObj = this.xml2json(xmlDoc)
-		var xmlDoc2 = this.json2xml(resultObj)
-		var xmlDocStr = this.json2xml_str(resultObj)
-		alert(resultObj)
-		
-		var testObjNS = {
-			MyOperation : {
-				test: 'value'
-			}
-		}
-		
-		testObjNS.MyOperation._tns = "http://www.example.org/specs/test";
-		
-		alert(this.json2xml_str(testObjNS))
-		
-	}
+	}	
 }

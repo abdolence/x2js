@@ -52,6 +52,7 @@ Test html
     var xmlText = "<MyOperation><test>value</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
     var jsonObj = X2JS.xml_str2json( xmlText );
     alert (jsonObj.MyOperation.test);
+    alert (jsonObj.MyOperation.test_asArray[0]);
 
     // XML/DOM to JSON
     

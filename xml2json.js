@@ -38,8 +38,11 @@ function X2JS() {
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
 				var child = nodeChildren[cidx];
 				if(result[child.nodeName] == null) {
-					if(child.nodeType != DOMNodeTypes.TEXT_NODE)
+					if(child.nodeType != DOMNodeTypes.TEXT_NODE) {
 						result[child.nodeName] = parseDOMChildren(child);
+						result[child.nodeName+"_asArray"] = new Array();
+						result[child.nodeName+"_asArray"][0] = result[child.nodeName]; 						
+					}
 					else
 						result = child.nodeValue;
 				}
@@ -49,6 +52,8 @@ function X2JS() {
 							var tmpObj = result[child.nodeName];
 							result[child.nodeName] = new Array(nodeChildren.length);
 							result[child.nodeName][0] = tmpObj;
+							
+							result[child.nodeName+"_asArray"] = result[child.nodeName]; 						
 						}
 					}
 					var aridx = 0;
@@ -85,11 +90,15 @@ function X2JS() {
 			return "";
 	}
 	
+	function endsWith(str, suffix) {
+	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
+	}
+	
 	function parseJSONObject ( jsonObj, tagged ) {
 		var result = "";	
 		var jsonObjTNS = null;
 		for( var it in jsonObj  ) {
-			if(it=="_tns")
+			if(it=="_tns" || endsWith(it.toString(),("_asArray")))
 				continue;
 			var subObj = jsonObj[it];
 			if(subObj!=null && subObj instanceof Object) {

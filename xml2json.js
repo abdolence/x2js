@@ -32,19 +32,17 @@ function X2JS() {
 		else
 		if(node.nodeType == DOMNodeTypes.ELEMENT_NODE) {
 			var result = new Object;
+			result["_cnt"]=0;
 			
 			var nodeChildren = node.childNodes;
 			
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
 				var child = nodeChildren[cidx];
+				result._cnt++;
 				if(result[child.nodeName] == null) {
-					if(child.nodeType != DOMNodeTypes.TEXT_NODE) {
-						result[child.nodeName] = parseDOMChildren(child);
-						result[child.nodeName+"_asArray"] = new Array();
-						result[child.nodeName+"_asArray"][0] = result[child.nodeName]; 						
-					}
-					else
-						result = child.nodeValue;
+					result[child.nodeName] = parseDOMChildren(child);
+					result[child.nodeName+"_asArray"] = new Array();
+					result[child.nodeName+"_asArray"][0] = result[child.nodeName]; 						
 				}
 				else {
 					if(result[child.nodeName] != null) {
@@ -61,7 +59,9 @@ function X2JS() {
 					(result[child.nodeName])[aridx] = parseDOMChildren(child);
 				}			
 			}
-			
+			if( result._cnt == 1 && result["#text"]!=null  ) {
+				result = result["#text"];
+			} 
 			return result;
 		}
 		else
@@ -134,7 +134,7 @@ function X2JS() {
 	
 	this.xml_str2json = function (xmlDocStr) {
 		var parser=new DOMParser();
-		xmlDoc=parser.parseFromString(xmlText,"text/xml");
+		var xmlDoc=parser.parseFromString(xmlDocStr,"text/xml");
 		return this.xml2json(xmlDoc);
 	}
 
@@ -148,3 +148,5 @@ function X2JS() {
 		return parser.parseFromString( xmlStr, "text/xml" );
 	}	
 }
+
+var x2js = new X2JS();

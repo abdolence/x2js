@@ -55,7 +55,7 @@ function X2JS() {
 						}
 					}
 					var aridx = 0;
-					while(result[child.nodeName][aridx]!=null) aridx++;			
+					while(result[child.nodeName][aridx]!=null) aridx++;
 					(result[child.nodeName])[aridx] = parseDOMChildren(child);
 				}			
 			}

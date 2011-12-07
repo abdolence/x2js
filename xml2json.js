@@ -51,7 +51,7 @@ function X2JS() {
 							result[child.nodeName] = new Array(nodeChildren.length);
 							result[child.nodeName][0] = tmpObj;
 							
-							result[child.nodeName+"_asArray"] = result[child.nodeName]; 						
+							result[child.nodeName+"_asArray"] = result[child.nodeName];
 						}
 					}
 					var aridx = 0;

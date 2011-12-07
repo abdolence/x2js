@@ -16,13 +16,15 @@
  */
 
 function X2JS() {
+
+	var DOMNodeTypes = {
+		ELEMENT_NODE : 1,
+		TEXT_NODE    : 3,
+		DOCUMENT_NODE : 9
+	}
+
 	function parseDOMChildren( node ) {
 	
-		var DOMNodeTypes = {
-			ELEMENT_NODE : 1,
-			TEXT_NODE    : 3,
-			DOCUMENT_NODE : 9
-		}
 	
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
 			var result = new Object;
@@ -42,7 +44,7 @@ function X2JS() {
 				if(result[child.nodeName] == null) {
 					result[child.nodeName] = parseDOMChildren(child);
 					result[child.nodeName+"_asArray"] = new Array();
-					result[child.nodeName+"_asArray"][0] = result[child.nodeName]; 						
+					result[child.nodeName+"_asArray"][0] = result[child.nodeName];
 				}
 				else {
 					if(result[child.nodeName] != null) {

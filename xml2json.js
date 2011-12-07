@@ -67,7 +67,7 @@ function X2JS() {
 			return result;
 		}
 		else
-		if(node.nodeType == DOMNodeTypes.TEXT_NODE) {		
+		if(node.nodeType == DOMNodeTypes.TEXT_NODE) {
 			return node.nodeValue;
 		}	
 	}

@@ -22,6 +22,15 @@ function X2JS() {
 		TEXT_NODE    : 3,
 		DOCUMENT_NODE : 9
 	}
+	
+	function getNodeLocalName( node ) {
+		var nodeLocalName = node.localName;			
+		if(nodeLocalName == null) // Yeah, this is IE!! 
+			nodeLocalName = node.baseName;
+		if(nodeLocalName == null || nodeLocalName=="") // =="" is IE too
+			nodeLocalName = node.nodeName;
+		return nodeLocalName;
+	}
 
 	function parseDOMChildren( node ) {
 	
@@ -29,10 +38,7 @@ function X2JS() {
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
 			var result = new Object;
 			var child = node.firstChild; 
-			var childName = child.localName;
-			if(childName == null)
-				childName = child.nodeName;
-			
+			var childName = getNodeLocalName(child);
 			result[childName] = parseDOMChildren(child);
 			return result;
 		}
@@ -46,9 +52,7 @@ function X2JS() {
 			// Children nodes
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
 				var child = nodeChildren[cidx];
-				var childName = child.localName;
-				if(childName == null)
-					childName = child.nodeName;
+				var childName = getNodeLocalName(child);
 				
 				result.__cnt++;
 				if(result[childName] == null) {
@@ -179,14 +183,28 @@ function X2JS() {
 		
 		return result;
 	}
+	
+	this.parseXmlString = function(xmlDocStr) {
+		var xmlDoc;
+		if (window.DOMParser) {
+			var parser=new DOMParser();			
+			xmlDoc = parser.parseFromString( xmlDocStr, "text/xml" );
+		}
+		else {
+			// IE :(
+			var xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+			xmlDoc.async="false";
+			xmlDoc.loadXML(xmlDocStr);
+		}
+		return xmlDoc;
+	}
 
 	this.xml2json = function (xmlDoc) {
 		return parseDOMChildren ( xmlDoc );
 	}
 	
 	this.xml_str2json = function (xmlDocStr) {
-		var parser=new DOMParser();
-		var xmlDoc=parser.parseFromString(xmlDocStr,"text/xml");
+		var xmlDoc = this.parseXmlString(xmlDocStr);	
 		return this.xml2json(xmlDoc);
 	}
 
@@ -195,10 +213,9 @@ function X2JS() {
 	}
 
 	this.json2xml = function (jsonObj) {
-		var parser=new DOMParser();
-		var xmlStr = this.json2xml_str (jsonObj);
-		return parser.parseFromString( xmlStr, "text/xml" );
-	}	
+		var xmlDocStr = this.json2xml_str (jsonObj);
+		return this.parseXmlString(xmlDocStr);
+	}
 }
 
 var x2js = new X2JS();

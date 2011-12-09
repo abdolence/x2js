@@ -21,7 +21,7 @@ Test html
                     {
                         ttt : 'vvvv2' 
                     }                     
-                ],
+                ]
             }
         }
     );
@@ -41,7 +41,7 @@ Test html
                     {
                         ttt : 'vvvv2' 
                     }                     
-                ],
+                ]
             }
         }
     );
@@ -54,11 +54,9 @@ Test html
     alert (jsonObj.MyOperation.test);
     alert (jsonObj.MyOperation.test_asArray[0]);
 
-    // XML/DOM to JSON
-    
+    // XML/DOM to JSON    
     var xmlText = " <MyOperation> <test>- Success -</test> <test2> <item> ddsfg </item> <item>dsdgfdgfd</item></test2></MyOperation>"
-    var parser=new DOMParser();
-    xmlDoc=parser.parseFromString(xmlText,"text/xml");
+    xmlDoc=X2JS.parseXmlString(xmlText);
     
     var jsonObj = X2JS.xml2json( xmlDoc );
     alert (jsonObj.MyOperation.test);
@@ -88,7 +86,7 @@ Test html
     
     
     // Parse XML with namespaces
-    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
+    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></testns:MyOperation>";
     var jsonObj = X2JS.xml_str2json( xmlText );
     alert(jsonObj.MyOperation.test); 
     
@@ -103,6 +101,8 @@ Test html
     );
     
     alert(xmlDocStr);
+    
+    alert('-- ALL TESTS COMPLETED! --');
             
 </script>
 </body>

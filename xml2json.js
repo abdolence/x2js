@@ -90,7 +90,7 @@ function X2JS() {
 		}	
 	}
 	
-	function startTag(jsonObj, element, attrList) {
+	function startTag(jsonObj, element, attrList, closed) {
 		var resultStr = "<"+element;
 		if(attrList!=null) {
 			for(var aidx = 0; aidx < attrList.length; aidx++) {
@@ -99,7 +99,10 @@ function X2JS() {
 				resultStr+=" "+attrName.substr(1)+"='"+attrVal+"'";
 			}
 		}
-		resultStr+=">";
+		if(!closed)
+			resultStr+=">";
+		else
+			resultStr+="/>";
 		return resultStr;
 	}
 	
@@ -147,28 +150,27 @@ function X2JS() {
 						arrayOfObjects = subObj[0] instanceof Object;
 					}
 					else {
-						result+=startTag(subObj, it, attrList);
-						result+=endTag(it);
+						result+=startTag(subObj, it, attrList, true);
 					}
 						
 					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {						
 						if(arrayOfObjects)
 							result+=parseJSONObject(subObj[arIdx]);
 						else {
-							result+=startTag(subObj, it, attrList);
+							result+=startTag(subObj, it, attrList, false);
 							result+=parseJSONTextObject(subObj[arIdx]);
 							result+=endTag(it);
 						}
 					}
 				}
 				else {
-					result+=startTag(subObj, it, attrList);
+					result+=startTag(subObj, it, attrList, false);
 					result+=parseJSONObject(subObj);
 					result+=endTag(it);
 				}
 			}
 			else {
-				result+=startTag(subObj, it, attrList);
+				result+=startTag(subObj, it, attrList, false);
 				result+=parseJSONTextObject(subObj);
 				result+=endTag(it);
 			}

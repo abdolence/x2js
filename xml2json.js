@@ -39,7 +39,7 @@ function X2JS() {
 		else
 		if(node.nodeType == DOMNodeTypes.ELEMENT_NODE) {
 			var result = new Object;
-			result._cnt=0;
+			result.__cnt=0;
 			
 			var nodeChildren = node.childNodes;
 			
@@ -50,10 +50,10 @@ function X2JS() {
 				if(childName == null)
 					childName = child.nodeName;
 				
-				result._cnt++;
+				result.__cnt++;
 				if(result[childName] == null) {
 					result[childName] = parseDOMChildren(child);
-					result[childName+"_asArray"] = new Array();
+					result[childName+"_asArray"] = new Array(1);
 					result[childName+"_asArray"][0] = result[childName];
 				}
 				else {
@@ -75,11 +75,11 @@ function X2JS() {
 			// Attributes
 			for(var aidx=0; aidx <node.attributes.length; aidx++) {
 				var attr = node.attributes[aidx];
-				result._cnt++;
+				result.__cnt++;
 				result["_"+attr.name]=attr.value;
 			}
 			
-			if( result._cnt == 1 && result["#text"]!=null  ) {
+			if( result.__cnt == 1 && result["#text"]!=null  ) {
 				result = result["#text"];
 			} 
 			return result;

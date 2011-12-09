@@ -62,7 +62,30 @@ Test html
     
     var jsonObj = X2JS.xml2json( xmlDoc );
     alert (jsonObj.MyOperation.test);
-        
+    
+    // Parsing XML attrs
+    var xmlText = "<MyOperation myAttr='SuccessAttrValue'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
+    var jsonObj = X2JS.xml_str2json( xmlText );
+    alert (jsonObj.MyOperation._myAttr);
+    alert (jsonObj.MyOperation.test2._myAttr);
+    
+    // JSON to XML attrs
+    var xmlDocStr = X2JS.json2xml_str(
+        {
+            TestAttrRoot : {
+                _myAttr : 'myAttrValue',                
+                MyChild : 'my_child_value',
+                MyAnotherChild: 10,
+                MyTextAttrChild : {
+                    _myTextAttr : 'myTextAttrValue',
+                    '#text' : 'HelloText'
+                }
+            }
+        }
+    );
+    
+    alert(xmlDocStr);
+            
 </script>
 </body>
 </html>

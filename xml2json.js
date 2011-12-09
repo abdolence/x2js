@@ -34,10 +34,11 @@ function X2JS() {
 		else
 		if(node.nodeType == DOMNodeTypes.ELEMENT_NODE) {
 			var result = new Object;
-			result["_cnt"]=0;
+			result._cnt=0;
 			
 			var nodeChildren = node.childNodes;
 			
+			// Children nodes
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
 				var child = nodeChildren[cidx];
 				result._cnt++;
@@ -61,6 +62,14 @@ function X2JS() {
 					(result[child.nodeName])[aridx] = parseDOMChildren(child);
 				}			
 			}
+			
+			// Attributes
+			for(var aidx=0; aidx <node.attributes.length; aidx++) {
+				var attr = node.attributes[aidx];
+				result._cnt++;
+				result["_"+attr.name]=attr.value;
+			}
+			
 			if( result._cnt == 1 && result["#text"]!=null  ) {
 				result = result["#text"];
 			} 
@@ -72,14 +81,18 @@ function X2JS() {
 		}	
 	}
 	
-	function startTag(elementName, tns, tagged) {
+	function startTag(jsonObj, elementName, attrList, tagged) {
 		if(tagged) {
-			if(tns == null) {
-				return "<"+elementName+">";
+			var resultStr = "<"+elementName;
+			if(attrList!=null) {
+				for(var aidx = 0; aidx < attrList.length; aidx++) {
+					var attrName = attrList[aidx];
+					var attrVal = jsonObj[attrName];
+					resultStr+=" "+attrName.substr(1)+"='"+attrVal+"'";
+				}
 			}
-			else {
-				return "<"+elementName+" tns=\""+tns+"\">";
-			}				
+			resultStr+=">";
+			return resultStr;
 		}
 		else
 			return "";
@@ -98,34 +111,49 @@ function X2JS() {
 	
 	function parseJSONObject ( jsonObj, tagged ) {
 		var result = "";	
-		var jsonObjTNS = null;
+		var attrList = [];
 		for( var it in jsonObj  ) {
-			if(it=="_tns" || endsWith(it.toString(),("_asArray")))
+			if(endsWith(it.toString(),("_asArray")))
 				continue;
+			if(it.toString()[0]=="_") {
+				attrList.push(it)
+				continue;
+			}
+				
 			var subObj = jsonObj[it];
-			if(subObj!=null && subObj instanceof Object) {
+			if(subObj!=null && subObj instanceof Object && subObj["#text"]==null) {
 				if(subObj instanceof Array) {
 					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {
-						result+=startTag(it, jsonObjTNS, tagged);
+						result+=startTag(jsonObj, it, attrList,  tagged);
 						arrayTagging = subObj[arIdx] instanceof Object;
 						result+=parseJSONObject(subObj[arIdx], arrayTagging);
 						result+=endTag(it, tagged);
 					}
 				}
-				else {
-					jsonObjTNS = subObj["_tns"];				
-					result+=startTag(it, jsonObjTNS, tagged);
+				else {	
+					result+=startTag(jsonObj, it, attrList, tagged);					
 					result+=parseJSONObject(subObj, true);
 					result+=endTag(it, tagged);
-					jsonObjTNS = null;
 				}
 			}
 			else
+			if(subObj["#text"]!=null) {
+				for( var itS in subObj ) {
+					if(itS.toString()[0]=="_") {
+						attrList.push(itS)
+					}
+				}
+				result+=startTag(subObj, it, attrList, tagged);
+				result+=parseJSONObject(subObj, false);
+				result+=endTag(it, tagged);
+			}
+			else
 			if(subObj instanceof String || typeof (subObj) == "string") {
-				result+=startTag(it, jsonObjTNS, tagged);			
+				result+=startTag(jsonObj, it, attrList, tagged);			
 				result+=subObj;
 				result+=endTag(it, tagged);			
 			}
+			attrList = [];
 		}
 		return result;
 	}

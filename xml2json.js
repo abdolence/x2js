@@ -191,7 +191,7 @@ function X2JS() {
 	}
 
 	this.json2xml_str = function (jsonObj) {
-		return parseJSONObject ( jsonObj, true );
+		return parseJSONObject ( jsonObj );
 	}
 
 	this.json2xml = function (jsonObj) {

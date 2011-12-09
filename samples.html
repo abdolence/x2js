@@ -26,12 +26,13 @@ Test html
         }
     );
     
+    
     // JSON to XML string
     var xmlDocStr = X2JS.json2xml_str(
         {
             MyRoot : {
                 MyChild : 'my_child_value',
-                MyAnotherChild: 10,
+                MyAnotherChild : 10,
                 MyArray : [ 'test', 'test2' ],
                 MyArrayRecords : [ 
                     {
@@ -47,7 +48,6 @@ Test html
     
     alert(xmlDocStr);
     
-
     // XML string to JSON    
     var xmlText = "<MyOperation><test>Success</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
     var jsonObj = X2JS.xml_str2json( xmlText );
@@ -67,7 +67,7 @@ Test html
     var xmlText = "<MyOperation myAttr='SuccessAttrValue'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
     var jsonObj = X2JS.xml_str2json( xmlText );
     alert (jsonObj.MyOperation._myAttr);
-    alert (jsonObj.MyOperation.test2._myAttr);
+    alert (jsonObj.MyOperation.test2._myAttr);    
     
     // JSON to XML attrs
     var xmlDocStr = X2JS.json2xml_str(
@@ -80,6 +80,24 @@ Test html
                     _myTextAttr : 'myTextAttrValue',
                     '#text' : 'HelloText'
                 }
+            }
+        }
+    );
+    
+    alert(xmlDocStr);
+    
+    
+    // Parse XML with namespaces
+    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
+    var jsonObj = X2JS.xml_str2json( xmlText );
+    alert(jsonObj.MyOperation.test); 
+    
+    // Parse JSON object with namespaces
+    var xmlDocStr = X2JS.json2xml_str(
+        {
+            'm:TestAttrRoot' : {
+                '_tns:m' : 'http://www.example.org',                
+                MyChild : 'my_child_value'
             }
         }
     );

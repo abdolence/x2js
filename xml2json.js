@@ -28,7 +28,12 @@ function X2JS() {
 	
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
 			var result = new Object;
-			result[node.firstChild.nodeName] = parseDOMChildren(node.firstChild);
+			var child = node.firstChild; 
+			var childName = child.localName;
+			if(childName == null)
+				childName = child.nodeName;
+			
+			result[childName] = parseDOMChildren(child);
 			return result;
 		}
 		else
@@ -41,25 +46,29 @@ function X2JS() {
 			// Children nodes
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
 				var child = nodeChildren[cidx];
+				var childName = child.localName;
+				if(childName == null)
+					childName = child.nodeName;
+				
 				result._cnt++;
-				if(result[child.nodeName] == null) {
-					result[child.nodeName] = parseDOMChildren(child);
-					result[child.nodeName+"_asArray"] = new Array();
-					result[child.nodeName+"_asArray"][0] = result[child.nodeName];
+				if(result[childName] == null) {
+					result[childName] = parseDOMChildren(child);
+					result[childName+"_asArray"] = new Array();
+					result[childName+"_asArray"][0] = result[childName];
 				}
 				else {
-					if(result[child.nodeName] != null) {
-						if( !(result[child.nodeName] instanceof Array)) {
-							var tmpObj = result[child.nodeName];
-							result[child.nodeName] = new Array(nodeChildren.length);
-							result[child.nodeName][0] = tmpObj;
+					if(result[childName] != null) {
+						if( !(result[childName] instanceof Array)) {
+							var tmpObj = result[childName];
+							result[childName] = new Array(nodeChildren.length);
+							result[childName][0] = tmpObj;
 							
-							result[child.nodeName+"_asArray"] = result[child.nodeName];
+							result[childName+"_asArray"] = result[childName];
 						}
 					}
 					var aridx = 0;
-					while(result[child.nodeName][aridx]!=null) aridx++;
-					(result[child.nodeName])[aridx] = parseDOMChildren(child);
+					while(result[childName][aridx]!=null) aridx++;
+					(result[childName])[aridx] = parseDOMChildren(child);
 				}			
 			}
 			
@@ -81,80 +90,91 @@ function X2JS() {
 		}	
 	}
 	
-	function startTag(jsonObj, elementName, attrList, tagged) {
-		if(tagged) {
-			var resultStr = "<"+elementName;
-			if(attrList!=null) {
-				for(var aidx = 0; aidx < attrList.length; aidx++) {
-					var attrName = attrList[aidx];
-					var attrVal = jsonObj[attrName];
-					resultStr+=" "+attrName.substr(1)+"='"+attrVal+"'";
-				}
+	function startTag(jsonObj, element, attrList) {
+		var resultStr = "<"+element;
+		if(attrList!=null) {
+			for(var aidx = 0; aidx < attrList.length; aidx++) {
+				var attrName = attrList[aidx];
+				var attrVal = jsonObj[attrName];
+				resultStr+=" "+attrName.substr(1)+"='"+attrVal+"'";
 			}
-			resultStr+=">";
-			return resultStr;
 		}
-		else
-			return "";
+		resultStr+=">";
+		return resultStr;
 	}
 	
-	function endTag(elementName, tagged) {
-		if(tagged)
-			return "</"+elementName+">"
-		else
-			return "";
+	function endTag(elementName) {
+		return "</"+elementName+">"
 	}
 	
 	function endsWith(str, suffix) {
 	    return str.indexOf(suffix, str.length - suffix.length) !== -1;
 	}
 	
-	function parseJSONObject ( jsonObj, tagged ) {
-		var result = "";	
-		var attrList = [];
-		for( var it in jsonObj  ) {
-			if(endsWith(it.toString(),("_asArray")))
-				continue;
-			if(it.toString()[0]=="_") {
-				attrList.push(it)
-				continue;
-			}
-				
-			var subObj = jsonObj[it];
-			if(subObj!=null && subObj instanceof Object && subObj["#text"]==null) {
-				if(subObj instanceof Array) {
-					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {
-						result+=startTag(jsonObj, it, attrList,  tagged);
-						arrayTagging = subObj[arIdx] instanceof Object;
-						result+=parseJSONObject(subObj[arIdx], arrayTagging);
-						result+=endTag(it, tagged);
-					}
-				}
-				else {	
-					result+=startTag(jsonObj, it, attrList, tagged);					
-					result+=parseJSONObject(subObj, true);
-					result+=endTag(it, tagged);
-				}
-			}
-			else
-			if(subObj["#text"]!=null) {
-				for( var itS in subObj ) {
-					if(itS.toString()[0]=="_") {
-						attrList.push(itS)
-					}
-				}
-				result+=startTag(subObj, it, attrList, tagged);
-				result+=parseJSONObject(subObj, false);
-				result+=endTag(it, tagged);
-			}
-			else
-			if(subObj instanceof String || typeof (subObj) == "string") {
-				result+=startTag(jsonObj, it, attrList, tagged);			
-				result+=subObj;
-				result+=endTag(it, tagged);			
-			}
-			attrList = [];
+	function parseJSONTextObject ( jsonTxtObj ) {
+		var result ="";
+		if(jsonTxtObj["#text"]!=null) {
+			result+=jsonTxtObj["#text"];
 		}
+		else {
+			result+=jsonTxtObj;
+		}
+		return result;
+	}
+	
+	function parseJSONObject ( jsonObj ) {
+		var result = "";	
+		
+		for( var it in jsonObj  ) {
+						
+			if(endsWith(it.toString(),("_asArray")) || it.toString()[0]=="_")
+				continue;
+			
+			var subObj = jsonObj[it];						
+			
+			var attrList = [];
+			for( var ait in subObj  ) {
+				if(ait.toString()[0]=="_") {
+					attrList.push(ait)
+				}
+			}						
+			
+			if(subObj!=null && subObj instanceof Object && subObj["#text"]==null) {
+				
+				if(subObj instanceof Array) {
+					var arrayOfObjects = true;
+					if(subObj.length > 0) {
+						arrayOfObjects = subObj[0] instanceof Object;
+					}
+					else {
+						result+=startTag(subObj, it, attrList);
+						result+=endTag(it);
+					}
+						
+					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {						
+						if(arrayOfObjects)
+							result+=parseJSONObject(subObj[arIdx]);
+						else {
+							result+=startTag(subObj, it, attrList);
+							result+=parseJSONTextObject(subObj[arIdx]);
+							result+=endTag(it);
+						}
+					}
+				}
+				else {
+					result+=startTag(subObj, it, attrList);
+					result+=parseJSONObject(subObj);
+					result+=endTag(it);
+				}
+			}
+			else {
+				result+=startTag(subObj, it, attrList);
+				result+=parseJSONTextObject(subObj);
+				result+=endTag(it);
+			}
+						
+		}
+		
 		return result;
 	}
 
@@ -169,7 +189,7 @@ function X2JS() {
 	}
 
 	this.json2xml_str = function (jsonObj) {
-		return parseJSONObject ( jsonObj, true );	
+		return parseJSONObject ( jsonObj, true );
 	}
 
 	this.json2xml = function (jsonObj) {

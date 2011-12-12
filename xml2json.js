@@ -51,7 +51,7 @@ function X2JS() {
 			
 			// Children nodes
 			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
-				var child = nodeChildren[cidx];
+				var child = nodeChildren.item(cidx); // nodeChildren[cidx];
 				var childName = getNodeLocalName(child);
 				
 				result.__cnt++;

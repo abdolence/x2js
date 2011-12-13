@@ -151,14 +151,14 @@ function X2JS() {
 		
 		for( var it in jsonObj  ) {
 						
-			if(endsWith(it.toString(),("_asArray")) || it.toString()[0]=="_")
+			if(endsWith(it.toString(),("_asArray")) || it.toString().indexOf("_")==0)
 				continue;
 			
 			var subObj = jsonObj[it];						
 			
 			var attrList = [];
 			for( var ait in subObj  ) {
-				if(ait.toString()[0]=="_" && ait.toString()[1]!="_") {
+				if(ait.toString().indexOf("__")== -1 && ait.toString().indexOf("_")==0) {
 					attrList.push(ait);
 				}
 			}
@@ -194,7 +194,7 @@ function X2JS() {
 				result+=startTag(subObj, it, attrList, false);
 				result+=parseJSONTextObject(subObj);
 				result+=endTag(subObj,it);
-			}						
+			}
 		}
 		
 		return result;
@@ -208,6 +208,9 @@ function X2JS() {
 		}
 		else {
 			// IE :(
+			if(xmlDocStr.indexOf("<?")==0) {
+				xmlDocStr = xmlDocStr.substr( xmlDocStr.indexOf("?>") + 2 );
+			}
 			xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
 			xmlDoc.async="false";
 			xmlDoc.loadXML(xmlDocStr);

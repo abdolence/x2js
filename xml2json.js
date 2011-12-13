@@ -211,7 +211,7 @@ function X2JS() {
 		}
 		else {
 			// IE :(
-			var xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
+			xmlDoc=new ActiveXObject("Microsoft.XMLDOM");
 			xmlDoc.async="false";
 			xmlDoc.loadXML(xmlDocStr);
 		}

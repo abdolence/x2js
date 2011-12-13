@@ -82,7 +82,7 @@ function X2JS() {
 			
 			// Attributes
 			for(var aidx=0; aidx <node.attributes.length; aidx++) {
-				var attr = node.attributes[aidx];
+				var attr = node.attributes.item(aidx); // [aidx];
 				result.__cnt++;
 				result["_"+attr.name]=attr.value;
 			}

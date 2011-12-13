@@ -130,6 +130,12 @@ Test html
     
     alert(xmlDocStr);
 
+    // Parse XML with header
+    var xmlText = "<?xml version='1.0' encoding='utf-8' ?>\n"+
+    			  "<test>XML HEADER SUCCESS!</test>";
+    
+    var jsonObj = X2JS.xml_str2json( xmlText );
+    alert(jsonObj.test);             
     
     alert('-- ALL TESTS COMPLETED! --');
             

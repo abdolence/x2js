@@ -37,8 +37,6 @@ function X2JS() {
 	}
 
 	function parseDOMChildren( node ) {
-	
-	
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
 			var result = new Object;
 			var child = node.firstChild; 
@@ -130,7 +128,7 @@ function X2JS() {
 	}
 	
 	function endTag(jsonObj,elementName) {
-		return "</"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"")+elementName+">"
+		return "</"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"")+elementName+">";
 	}
 	
 	function endsWith(str, suffix) {
@@ -161,7 +159,7 @@ function X2JS() {
 			var attrList = [];
 			for( var ait in subObj  ) {
 				if(ait.toString()[0]=="_" && ait.toString()[1]!="_") {
-					attrList.push(ait)
+					attrList.push(ait);
 				}
 			}
 			
@@ -196,8 +194,7 @@ function X2JS() {
 				result+=startTag(subObj, it, attrList, false);
 				result+=parseJSONTextObject(subObj);
 				result+=endTag(subObj,it);
-			}
-						
+			}						
 		}
 		
 		return result;

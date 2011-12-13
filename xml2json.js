@@ -31,6 +31,10 @@ function X2JS() {
 			nodeLocalName = node.nodeName;
 		return nodeLocalName;
 	}
+	
+	function getNodePrefix(node) {
+		return node.prefix;
+	}
 
 	function parseDOMChildren( node ) {
 	
@@ -83,9 +87,24 @@ function X2JS() {
 				result["_"+attr.name]=attr.value;
 			}
 			
+			// Node namespace prefix
+			var nodePrefix = getNodePrefix(node);
+			if(nodePrefix!=null && nodePrefix!="") {
+				result.__cnt++;
+				result.__prefix=nodePrefix;
+			}
+			
 			if( result.__cnt == 1 && result["#text"]!=null  ) {
 				result = result["#text"];
 			} 
+			
+			if(result["#text"]!=null) {
+				result.__text = result["#text"];
+				result["#text"] = null;
+				result.toString = function() {
+					return this.__text;
+				}
+			}
 			return result;
 		}
 		else
@@ -95,7 +114,7 @@ function X2JS() {
 	}
 	
 	function startTag(jsonObj, element, attrList, closed) {
-		var resultStr = "<"+element;
+		var resultStr = "<"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"") + element;
 		if(attrList!=null) {
 			for(var aidx = 0; aidx < attrList.length; aidx++) {
 				var attrName = attrList[aidx];
@@ -110,8 +129,8 @@ function X2JS() {
 		return resultStr;
 	}
 	
-	function endTag(elementName) {
-		return "</"+elementName+">"
+	function endTag(jsonObj,elementName) {
+		return "</"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"")+elementName+">"
 	}
 	
 	function endsWith(str, suffix) {
@@ -120,8 +139,8 @@ function X2JS() {
 	
 	function parseJSONTextObject ( jsonTxtObj ) {
 		var result ="";
-		if(jsonTxtObj["#text"]!=null) {
-			result+=jsonTxtObj["#text"];
+		if(jsonTxtObj.__text!=null) {
+			result+=jsonTxtObj.__text;
 		}
 		else {
 			result+=jsonTxtObj;
@@ -141,12 +160,12 @@ function X2JS() {
 			
 			var attrList = [];
 			for( var ait in subObj  ) {
-				if(ait.toString()[0]=="_") {
+				if(ait.toString()[0]=="_" && ait.toString()[1]!="_") {
 					attrList.push(ait)
 				}
-			}						
+			}
 			
-			if(subObj!=null && subObj instanceof Object && subObj["#text"]==null) {
+			if(subObj!=null && subObj instanceof Object && subObj.__text==null) {
 				
 				if(subObj instanceof Array) {
 					var arrayOfObjects = true;
@@ -163,20 +182,20 @@ function X2JS() {
 						else {
 							result+=startTag(subObj, it, attrList, false);
 							result+=parseJSONTextObject(subObj[arIdx]);
-							result+=endTag(it);
+							result+=endTag(subObj,it);
 						}
 					}
 				}
 				else {
 					result+=startTag(subObj, it, attrList, false);
 					result+=parseJSONObject(subObj);
-					result+=endTag(it);
+					result+=endTag(subObj,it);
 				}
 			}
 			else {
 				result+=startTag(subObj, it, attrList, false);
 				result+=parseJSONTextObject(subObj);
-				result+=endTag(it);
+				result+=endTag(subObj,it);
 			}
 						
 		}

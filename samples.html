@@ -89,9 +89,11 @@ Test html
     
     
     // Parse XML with namespaces
-    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></testns:MyOperation>";
+    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
     var jsonObj = X2JS.xml_str2json( xmlText );
-    alert(jsonObj.MyOperation.test);             
+    alert(jsonObj.MyOperation.test);
+    if(jsonObj.MyOperation.test2.item.length > 2)
+	alert("Error! Incorrect array len!");
     
     var testObjC = {
             'm:TestAttrRoot' : {

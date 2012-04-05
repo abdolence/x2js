@@ -16,6 +16,7 @@
  */
 
 function X2JS() {
+	var VERSION = "1.0.5"
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE : 1,
@@ -66,7 +67,7 @@ function X2JS() {
 					if(result[childName] != null) {
 						if( !(result[childName] instanceof Array)) {
 							var tmpObj = result[childName];
-							result[childName] = new Array(nodeChildren.length);
+							result[childName] = new Array();
 							result[childName][0] = tmpObj;
 							
 							result[childName+"_asArray"] = result[childName];

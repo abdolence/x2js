@@ -16,12 +16,13 @@
  */
 
 function X2JS() {
-	var VERSION = "1.0.5"
+	var VERSION = "1.0.6"
 
 	var DOMNodeTypes = {
-		ELEMENT_NODE : 1,
-		TEXT_NODE    : 3,
-		DOCUMENT_NODE : 9
+		ELEMENT_NODE 	   : 1,
+		TEXT_NODE    	   : 3,
+		CDATA_SECTION_NODE : 4,
+		DOCUMENT_NODE 	   : 9
 	}
 	
 	function getNodeLocalName( node ) {
@@ -99,15 +100,24 @@ function X2JS() {
 			
 			if(result["#text"]!=null) {
 				result.__text = result["#text"];
-				result["#text"] = null;
+				delete result["#text"];
+				delete result["#text_asArray"];
+			}
+			if(result["#cdata-section"]!=null) {
+				result.__cdata = result["#cdata-section"];
+				delete result["#cdata-section"];
+				delete result["#cdata-section_asArray"];
+			}
+			
+			if(result.__text!=null || result.__cdata!=null) {
 				result.toString = function() {
-					return this.__text;
+					return (this.__text!=null? this.__text:'')+( this.__cdata!=null ? this.__cdata:'');
 				}
 			}
 			return result;
 		}
 		else
-		if(node.nodeType == DOMNodeTypes.TEXT_NODE) {
+		if(node.nodeType == DOMNodeTypes.TEXT_NODE || node.nodeType == DOMNodeTypes.CDATA_SECTION_NODE) {
 			return node.nodeValue;
 		}	
 	}
@@ -149,11 +159,19 @@ function X2JS() {
 	
 	function parseJSONObject ( jsonObj ) {
 		var result = "";	
+
+		var elementsCnt = 0;
+		for( var it in jsonObj  ) {			
+			if(endsWith(it.toString(),("_asArray")) || it.toString().indexOf("_")==0 || (jsonObj[it] instanceof Function) )
+				continue;			
+			elementsCnt++;
+		}
 		
-		for( var it in jsonObj  ) {
-						
-			if(endsWith(it.toString(),("_asArray")) || it.toString().indexOf("_")==0)
-				continue;
+		
+		for( var it in jsonObj ) {
+
+			if(endsWith(it.toString(),("_asArray")) || it.toString().indexOf("_")==0 || (jsonObj[it] instanceof Function))
+				continue;			
 			
 			var subObj = jsonObj[it];						
 			
@@ -164,7 +182,7 @@ function X2JS() {
 				}
 			}
 			
-			if(subObj!=null && subObj instanceof Object && subObj.__text==null) {
+			if(subObj!=null && subObj instanceof Object && elementsCnt>0) {
 				
 				if(subObj instanceof Array) {
 					var arrayOfObjects = true;
@@ -188,12 +206,23 @@ function X2JS() {
 				else {
 					result+=startTag(subObj, it, attrList, false);
 					result+=parseJSONObject(subObj);
+					if(subObj.__cdata!=null) {										
+						result+="<![CDATA["+subObj.__cdata+"]]>";					
+					}				
+					if(subObj.__text!=null) {
+						result+=subObj.__text;
+					}
 					result+=endTag(subObj,it);
 				}
 			}
 			else {
 				result+=startTag(subObj, it, attrList, false);
-				result+=parseJSONTextObject(subObj);
+				if(subObj.__cdata!=null) {										
+					result+="<![CDATA["+subObj.__cdata+"]]>";					
+				}				
+				if(subObj.__text!=null || !(subObj instanceof Object)) {
+					result+=parseJSONTextObject(subObj);
+				}
 				result+=endTag(subObj,it);
 			}
 		}

@@ -139,6 +139,21 @@ Test html
     var jsonObj = X2JS.xml_str2json( xmlText );
     alert(jsonObj.test);
     
+    // Parse XML with CDATA
+    var xmlText = "<test><simple>simple success</simple><data><![CDATA[<success/>]]></data> </test>";
+    
+    var jsonObj = X2JS.xml_str2json( xmlText );
+    alert(jsonObj.test.data);
+    alert(jsonObj.test.data.__cdata);
+    alert(jsonObj.test.simple);
+    
+    
+    // Parse JSON object with CDATA
+    var xmlDocStr = X2JS.json2xml_str(
+        jsonObj
+    );
+    alert(xmlDocStr);
+    
     alert('-- ALL TESTS COMPLETED! --');
             
 </script>

@@ -161,7 +161,7 @@ function X2JS() {
 		var result = "";	
 
 		var elementsCnt = 0;
-		for( var it in jsonObj  ) {			
+		for( var it in jsonObj  ) {
 			if(endsWith(it.toString(),("_asArray")) || it.toString().indexOf("_")==0 || (jsonObj[it] instanceof Function) )
 				continue;			
 			elementsCnt++;

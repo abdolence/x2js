@@ -16,7 +16,7 @@
  */
 
 function X2JS() {
-	var VERSION = "1.0.6"
+	var VERSION = "1.0.7"
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE 	   : 1,

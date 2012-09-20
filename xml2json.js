@@ -185,22 +185,20 @@ function X2JS() {
 			if(subObj!=null && subObj instanceof Object && elementsCnt>0) {
 				
 				if(subObj instanceof Array) {
-					var arrayOfObjects = true;
-					if(subObj.length > 0) {
-						arrayOfObjects = subObj[0] instanceof Object;
-					}
-					else {
+					if(subObj.length == 0) {
 						result+=startTag(subObj, it, attrList, true);
 					}
-						
-					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {						
-						if(arrayOfObjects)
+					else
+					for(var arIdx = 0; arIdx < subObj.length; arIdx++) {
+						result+=startTag(subObj, it, attrList, false);
+						if(subObj[arIdx] instanceof Object) {
 							result+=parseJSONObject(subObj[arIdx]);
-						else {
-							result+=startTag(subObj, it, attrList, false);
-							result+=parseJSONTextObject(subObj[arIdx]);
-							result+=endTag(subObj,it);
 						}
+						else {
+							result+=parseJSONTextObject(subObj[arIdx]);
+							
+						}	
+						result+=endTag(subObj,it);
 					}
 				}
 				else {

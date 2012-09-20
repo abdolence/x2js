@@ -3,10 +3,11 @@
     <script type="text/javascript" src="xml2json.js"></script>
 </head>
 <body>
-Test html
+<h1>X2JS samples html</h1>
+
 <script type="text/javascript">
     var X2JS = new X2JS();
-    
+        
     // JSON to DOM
     var xmlDoc = X2JS.json2xml(
         {
@@ -25,6 +26,7 @@ Test html
             }
         }
     );
+        
     
     
     // JSON to XML string
@@ -47,6 +49,27 @@ Test html
     );
     
     alert(xmlDocStr);
+    
+    // JSON arrays to string
+    var xmlDocStr = X2JS.json2xml_str(
+    	{
+    		MyRoot : {
+    			namedItemArray: {
+    				item : [ 
+		    			{ first: 'success1' } , 
+		    			{ first: 'success2' }
+	    			] 
+	    		},
+	    		namedArray: [ 
+	    			{ first: 'success1' } , 
+	    			{ first: 'success2' } 
+	    		],
+	    		justArray: [ 'just success1', 'just success2' ]
+	    	} 
+    	}
+    );
+    
+    alert(xmlDocStr);    
     
     // XML string to JSON    
     var xmlText = "<MyOperation><test>Success</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
@@ -154,7 +177,8 @@ Test html
     );
     alert(xmlDocStr);
     
-    alert('-- ALL TESTS COMPLETED! --');
+    alert('-- ALL TESTS COMPLETED! --'); 
+    -->
             
 </script>
 </body>

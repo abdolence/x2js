@@ -16,7 +16,7 @@
  */
 
 function X2JS() {
-	var VERSION = "1.0.8"
+	var VERSION = "1.0.9"
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE 	   : 1,
@@ -169,9 +169,11 @@ function X2JS() {
 	
 	function parseJSONAttributes ( jsonObj ) {
 		var attrList = [];
-		for( var ait in jsonObj  ) {
-			if(ait.toString().indexOf("__")== -1 && ait.toString().indexOf("_")==0) {
-				attrList.push(ait);
+		if(jsonObj instanceof Object ) {
+			for( var ait in jsonObj  ) {
+				if(ait.toString().indexOf("__")== -1 && ait.toString().indexOf("_")==0) {
+					attrList.push(ait);
+				}
 			}
 		}
 		return attrList;

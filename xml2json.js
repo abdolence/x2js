@@ -239,7 +239,7 @@ function X2JS() {
 					result+=startTag(subObj, it, attrList, true)
 				}
 				else
-				if(subObj!=null && subObj instanceof Object) {
+				if(subObj instanceof Object) {
 					
 					if(subObj instanceof Array) {					
 						result+=parseJSONArray( subObj, it, attrList )					

@@ -188,6 +188,27 @@
         jsonObj
     );
     alert(xmlDocStr);
+
+	// Parse JSON with emtpy attributes    
+	var xmlDocStr = X2JS.json2xml_str(
+        {
+            MyRoot : {
+                MyNullChild : null,
+                MyNullChild2 : undefined,
+                MyAnotherChild : 10,
+                MyEmptyChild : {
+                	_attr : "test"
+                },
+                MyEmptyChild2 : {
+                	_attr : "test",
+                	__text : "Empty Nodes Test"
+                }                                
+            }
+        }
+    );
+    
+    alert(xmlDocStr);        
+    
     
     alert('-- ALL TESTS COMPLETED! --'); 
     -->

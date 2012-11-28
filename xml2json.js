@@ -123,7 +123,7 @@ function X2JS() {
 	}
 	
 	function startTag(jsonObj, element, attrList, closed) {
-		var resultStr = "<"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"") + element;
+		var resultStr = "<"+ ( (jsonObj!=null && jsonObj.__prefix!=null)? (jsonObj.__prefix+":"):"") + element;
 		if(attrList!=null) {
 			for(var aidx = 0; aidx < attrList.length; aidx++) {
 				var attrName = attrList[aidx];
@@ -235,15 +235,25 @@ function X2JS() {
 				
 				var attrList = parseJSONAttributes( subObj )
 				
+				if(subObj == null || subObj == undefined) {
+					result+=startTag(subObj, it, attrList, true)
+				}
+				else
 				if(subObj!=null && subObj instanceof Object) {
 					
 					if(subObj instanceof Array) {					
 						result+=parseJSONArray( subObj, it, attrList )					
 					}
 					else {
-						result+=startTag(subObj, it, attrList, false);
-						result+=parseJSONObject(subObj);
-						result+=endTag(subObj,it);
+						var subObjElementsCnt = jsonXmlElemCount ( subObj );
+						if(subObjElementsCnt > 0 || subObj.__text!=null || subObj.__cdata!=null) {
+							result+=startTag(subObj, it, attrList, false);
+							result+=parseJSONObject(subObj);
+							result+=endTag(subObj,it);
+						}
+						else {
+							result+=startTag(subObj, it, attrList, true);
+						}
 					}
 				}
 				else {

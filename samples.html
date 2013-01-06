@@ -207,8 +207,32 @@
         }
     );
     
-    alert(xmlDocStr);        
+    alert(xmlDocStr);
     
+    // Escaping XML characters
+    
+    X2JS.escapeMode(true);
+	
+	xmlDocStr = X2JS.json2xml_str(
+        {
+            MyRoot : {
+                MyEscapeXmlChild : "<success> & \" ' / </success>",
+                MyEscapeXmlChild2 : {
+                	_attr : "success",
+                	__text : "<success> & \" ' / </success>"
+                }                                
+            }
+        }
+    );
+	
+	alert(xmlDocStr);
+
+    jsonObj = X2JS.xml_str2json( xmlDocStr );
+    alert(jsonObj.MyRoot.MyEscapeXmlChild);
+    alert(jsonObj.MyRoot.MyEscapeXmlChild2);
+	        
+            
+    alert(X2JS.getVersion());
     
     alert('-- ALL TESTS COMPLETED! --'); 
     -->

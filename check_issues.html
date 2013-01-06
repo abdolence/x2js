@@ -7,5 +7,24 @@
 <script type="text/javascript">
     var X2JS = new X2JS();
 
+    X2JS.escapeMode(true);
+	
+	var xmlDocStr = X2JS.json2xml_str(
+        {
+            MyRoot : {
+                MyEscapeXmlChild : "<success> & \" ' / </success>",
+                MyEscapeXmlChild2 : {
+                	_attr : "success",
+                	__text : "<success> & \" ' / </success>"
+                }                                
+            }
+        }
+    );
+	
+	alert(xmlDocStr);
+
+    var jsonObj = X2JS.xml_str2json( xmlDocStr );
+    alert(jsonObj.MyRoot.MyEscapeXmlChild);
+    alert(jsonObj.MyRoot.MyEscapeXmlChild2);	
 </script>
 </body>

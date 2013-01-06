@@ -16,14 +16,15 @@
  */
 
 function X2JS() {
-	var VERSION = "1.0.9"
+	var VERSION = "1.0.10";
+	var escapeMode = false;
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE 	   : 1,
 		TEXT_NODE    	   : 3,
 		CDATA_SECTION_NODE : 4,
 		DOCUMENT_NODE 	   : 9
-	}
+	};
 	
 	function getNodeLocalName( node ) {
 		var nodeLocalName = node.localName;			
@@ -37,6 +38,14 @@ function X2JS() {
 	function getNodePrefix(node) {
 		return node.prefix;
 	}
+		
+	function escapeXmlChars(str) {
+		return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;')
+	}
+
+	function unescapeXmlChars(str) {
+		return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#x2F;/g, '\/')
+	}	
 
 	function parseDOMChildren( node ) {
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
@@ -100,6 +109,8 @@ function X2JS() {
 			
 			if(result["#text"]!=null) {
 				result.__text = result["#text"];
+				if(escapeMode)
+					result.__text = unescapeXmlChars(result.__text)
 				delete result["#text"];
 				delete result["#text_asArray"];
 			}
@@ -186,8 +197,11 @@ function X2JS() {
 			result+="<![CDATA["+jsonTxtObj.__cdata+"]]>";					
 		}
 		
-		if(jsonTxtObj.__text!=null) {
-			result+=jsonTxtObj.__text;
+		if(jsonTxtObj.__text!=null) {			
+			if(escapeMode)
+				result+=escapeXmlChars(jsonTxtObj.__text);
+			else
+				result+=jsonTxtObj.__text;
 		}
 		return result
 	}
@@ -199,8 +213,12 @@ function X2JS() {
 			result+=parseJSONTextAttrs ( jsonTxtObj )
 		}
 		else
-			if(jsonTxtObj!=null)
-				result+=jsonTxtObj;
+			if(jsonTxtObj!=null) {
+				if(escapeMode)
+					result+=escapeXmlChars(jsonTxtObj);
+				else
+					result+=jsonTxtObj;
+			}
 		
 		return result;
 	}
@@ -302,6 +320,14 @@ function X2JS() {
 	this.json2xml = function (jsonObj) {
 		var xmlDocStr = this.json2xml_str (jsonObj);
 		return this.parseXmlString(xmlDocStr);
+	}
+	
+	this.getVersion = function () {
+		return VERSION;
+	}		
+	
+	this.escapeMode = function(enabled) {
+		escapeMode = enabled;
 	}
 }
 

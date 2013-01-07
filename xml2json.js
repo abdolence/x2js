@@ -16,7 +16,7 @@
  */
 
 function X2JS() {
-	var VERSION = "1.0.10";
+	var VERSION = "1.0.11";
 	var escapeMode = false;
 
 	var DOMNodeTypes = {
@@ -40,7 +40,10 @@ function X2JS() {
 	}
 		
 	function escapeXmlChars(str) {
-		return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;')
+		if(typeof(str) == "string")
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;');
+		else
+			return str;
 	}
 
 	function unescapeXmlChars(str) {

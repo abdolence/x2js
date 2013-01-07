@@ -9,22 +9,25 @@
 
     X2JS.escapeMode(true);
 	
-	var xmlDocStr = X2JS.json2xml_str(
+	xmlDocStr = X2JS.json2xml_str(
         {
             MyRoot : {
                 MyEscapeXmlChild : "<success> & \" ' / </success>",
                 MyEscapeXmlChild2 : {
                 	_attr : "success",
                 	__text : "<success> & \" ' / </success>"
-                }                                
+                },
+                MyEscapeXmlChildNonString : false
             }
         }
     );
 	
 	alert(xmlDocStr);
 
-    var jsonObj = X2JS.xml_str2json( xmlDocStr );
+    jsonObj = X2JS.xml_str2json( xmlDocStr );
     alert(jsonObj.MyRoot.MyEscapeXmlChild);
-    alert(jsonObj.MyRoot.MyEscapeXmlChild2);	
+    alert(jsonObj.MyRoot.MyEscapeXmlChild2);
+    alert(jsonObj.MyRoot.MyEscapeXmlChildNonString);
+    	
 </script>
 </body>

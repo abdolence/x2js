@@ -1,5 +1,5 @@
 /*
- Copyright 2011 Abdulla Abdurakhmanov
+ Copyright 2011-2013 Abdulla Abdurakhmanov
  Original sources are available at https://code.google.com/p/x2js/
 
  Licensed under the Apache License, Version 2.0 (the "License");
@@ -15,9 +15,22 @@
  limitations under the License.
  */
 
-function X2JS() {
-	var VERSION = "1.0.11";
-	var escapeMode = false;
+function X2JS(config) {
+	'use strict';
+		
+	var VERSION = "1.1.1";
+	
+	config = config || {};
+	initConfigDefaults();
+	
+	function initConfigDefaults() {
+		if(config.escapeMode === undefined)
+			config.escapeMode = true;
+		if(config.attributePrefix === undefined)
+			config.attributePrefix = "_";
+		if(config.arrayAccessForm === undefined)
+			config.arrayAccessForm = "none";
+	}
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE 	   : 1,
@@ -47,8 +60,21 @@ function X2JS() {
 	}
 
 	function unescapeXmlChars(str) {
-		return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#x2F;/g, '\/')
-	}	
+		return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#x2F;/g, '\/');
+	}
+	
+	function toArrayAccessForm(obj, childName) {
+		switch(config.arrayAccessForm) {
+		case "property":
+			if(!(obj[childName] instanceof Array))
+				obj[childName+"_asArray"] = [obj[childName]];
+			else
+				obj[childName+"_asArray"] = obj[childName];
+			break;		
+		/*case "none":
+			break;*/
+		}
+	}
 
 	function parseDOMChildren( node ) {
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
@@ -73,17 +99,13 @@ function X2JS() {
 				result.__cnt++;
 				if(result[childName] == null) {
 					result[childName] = parseDOMChildren(child);
-					result[childName+"_asArray"] = new Array(1);
-					result[childName+"_asArray"][0] = result[childName];
+					toArrayAccessForm(result, childName);					
 				}
 				else {
 					if(result[childName] != null) {
 						if( !(result[childName] instanceof Array)) {
-							var tmpObj = result[childName];
-							result[childName] = new Array();
-							result[childName][0] = tmpObj;
-							
-							result[childName+"_asArray"] = result[childName];
+							result[childName] = [result[childName]];
+							toArrayAccessForm(result, childName);
 						}
 					}
 					var aridx = 0;
@@ -96,7 +118,7 @@ function X2JS() {
 			for(var aidx=0; aidx <node.attributes.length; aidx++) {
 				var attr = node.attributes.item(aidx); // [aidx];
 				result.__cnt++;
-				result["_"+attr.name]=attr.value;
+				result[config.attributePrefix+attr.name]=attr.value;
 			}
 			
 			// Node namespace prefix
@@ -110,10 +132,13 @@ function X2JS() {
 				result = result["#text"];
 			} 
 			
-			if(result["#text"]!=null) {
+			if(result["#text"]!=null) {				
 				result.__text = result["#text"];
-				if(escapeMode)
-					result.__text = unescapeXmlChars(result.__text)
+				if(result.__text instanceof Array) {
+					result.__text = result.__text.join("\n");
+				}
+				if(config.escapeMode)
+					result.__text = unescapeXmlChars(result.__text);
 				delete result["#text"];
 				delete result["#text_asArray"];
 			}
@@ -123,10 +148,14 @@ function X2JS() {
 				delete result["#cdata-section_asArray"];
 			}
 			
+			if(result.__cnt!= undefined) {
+				delete result.__cnt;
+			}
+			
 			if(result.__text!=null || result.__cdata!=null) {
 				result.toString = function() {
 					return (this.__text!=null? this.__text:'')+( this.__cdata!=null ? this.__cdata:'');
-				}
+				};
 			}
 			return result;
 		}
@@ -142,7 +171,7 @@ function X2JS() {
 			for(var aidx = 0; aidx < attrList.length; aidx++) {
 				var attrName = attrList[aidx];
 				var attrVal = jsonObj[attrName];
-				resultStr+=" "+attrName.substr(1)+"='"+attrVal+"'";
+				resultStr+=" "+attrName.substr(config.attributePrefix.length)+"='"+attrVal+"'";
 			}
 		}
 		if(!closed)
@@ -161,8 +190,9 @@ function X2JS() {
 	}
 	
 	function jsonXmlSpecialElem ( jsonObj, jsonObjField ) {
-		if(endsWith(jsonObjField.toString(),("_asArray")) 
-				|| jsonObjField.toString().indexOf("_")==0 
+		if((config.arrayAccessForm=="property" && endsWith(jsonObjField.toString(),("_asArray"))) 
+				|| jsonObjField.toString().indexOf(config.attributePrefix)==0 
+				|| jsonObjField.toString().indexOf("__")==0
 				|| (jsonObj[jsonObjField] instanceof Function) )
 			return true;
 		else
@@ -185,7 +215,7 @@ function X2JS() {
 		var attrList = [];
 		if(jsonObj instanceof Object ) {
 			for( var ait in jsonObj  ) {
-				if(ait.toString().indexOf("__")== -1 && ait.toString().indexOf("_")==0) {
+				if(ait.toString().indexOf("__")== -1 && ait.toString().indexOf(config.attributePrefix)==0) {
 					attrList.push(ait);
 				}
 			}
@@ -201,23 +231,23 @@ function X2JS() {
 		}
 		
 		if(jsonTxtObj.__text!=null) {			
-			if(escapeMode)
+			if(config.escapeMode)
 				result+=escapeXmlChars(jsonTxtObj.__text);
 			else
 				result+=jsonTxtObj.__text;
 		}
-		return result
+		return result;
 	}
 	
 	function parseJSONTextObject ( jsonTxtObj ) {
 		var result ="";
 
 		if( jsonTxtObj instanceof Object ) {
-			result+=parseJSONTextAttrs ( jsonTxtObj )
+			result+=parseJSONTextAttrs ( jsonTxtObj );
 		}
 		else
 			if(jsonTxtObj!=null) {
-				if(escapeMode)
+				if(config.escapeMode)
 					result+=escapeXmlChars(jsonTxtObj);
 				else
 					result+=jsonTxtObj;
@@ -257,13 +287,13 @@ function X2JS() {
 				var attrList = parseJSONAttributes( subObj )
 				
 				if(subObj == null || subObj == undefined) {
-					result+=startTag(subObj, it, attrList, true)
+					result+=startTag(subObj, it, attrList, true);
 				}
 				else
 				if(subObj instanceof Object) {
 					
 					if(subObj instanceof Array) {					
-						result+=parseJSONArray( subObj, it, attrList )					
+						result+=parseJSONArray( subObj, it, attrList );					
 					}
 					else {
 						var subObjElementsCnt = jsonXmlElemCount ( subObj );
@@ -290,6 +320,9 @@ function X2JS() {
 	}
 	
 	this.parseXmlString = function(xmlDocStr) {
+		if (xmlDocStr === undefined) {
+			return null;
+		}
 		var xmlDoc;
 		if (window.DOMParser) {
 			var parser=new window.DOMParser();			
@@ -305,33 +338,35 @@ function X2JS() {
 			xmlDoc.loadXML(xmlDocStr);
 		}
 		return xmlDoc;
+	};
+	
+	this.asArray = function(prop) {
+		if(prop instanceof Array)
+			return prop;
+		else
+			return [prop];
 	}
 
 	this.xml2json = function (xmlDoc) {
 		return parseDOMChildren ( xmlDoc );
-	}
+	};
 	
 	this.xml_str2json = function (xmlDocStr) {
 		var xmlDoc = this.parseXmlString(xmlDocStr);	
 		return this.xml2json(xmlDoc);
-	}
+	};
 
 	this.json2xml_str = function (jsonObj) {
 		return parseJSONObject ( jsonObj );
-	}
+	};
 
 	this.json2xml = function (jsonObj) {
 		var xmlDocStr = this.json2xml_str (jsonObj);
 		return this.parseXmlString(xmlDocStr);
-	}
+	};
 	
 	this.getVersion = function () {
 		return VERSION;
-	}		
+	};
 	
-	this.escapeMode = function(enabled) {
-		escapeMode = enabled;
-	}
 }
-
-var x2js = new X2JS();

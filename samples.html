@@ -6,10 +6,23 @@
 <h1>X2JS samples html</h1>
 
 <script type="text/javascript">
-    var X2JS = new X2JS();
+
+	// Create x2js instance with default config
+    var x2js = new X2JS();
+	
+ 	// Available options
+    var x2jsOptionsSample = new X2JS({
+    	// Escaping XML characters. Default is true from v1.1.0+
+    	escapeMode : true, 				
+    	// XML attributes prefix. Default is "_"
+    	attributePrefix : "_",
+    	// Array access form (none|property). Use property if you want X2JS generate additional property <element>_asArray to access in array form any element
+    	// Default is none from v1.1.0+
+    	arrayAccessForm : "none"
+    });
         
     // JSON to DOM
-    var xmlDoc = X2JS.json2xml(
+    var xmlDoc = x2js.json2xml(
         {
             MyRoot : {
                 MyChild : 'my_child_value',
@@ -26,11 +39,10 @@
             }
         }
     );
-        
     
     
     // JSON to XML string
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
         {
             MyRoot : {
                 MyChild : 'my_child_value',
@@ -48,10 +60,10 @@
         }
     );
     
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
     
     // JSON arrays to string
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
     	{
     		MyRoot : {
     			namedItemArray: {
@@ -81,32 +93,38 @@
     	}
     );
     
-    alert(xmlDocStr);    
+    console.log(xmlDocStr);    
     
     // XML string to JSON    
     var xmlText = "<MyOperation><test>Success</test><test2><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
-    var jsonObj = X2JS.xml_str2json( xmlText );
-    alert (jsonObj.MyOperation.test);
-    alert (jsonObj.MyOperation.test_asArray[0]);
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyOperation.test);
+    
+    // Array access form examples
+    console.log(x2js.asArray(jsonObj.MyOperation.test)[0]);
+    // Or old style (1.0.+):
+    x2jsOld = new X2JS({arrayAccessForm : "property"});
+    jsonObj = x2jsOld.xml_str2json( xmlText );
+    console.log("Old is "+jsonObj.MyOperation.test_asArray[0]);
 
     // XML/DOM to JSON    
-    var xmlText = " <MyOperation> <test>- Success -</test> <test2> <item> ddsfg </item> <item>dsdgfdgfd</item></test2></MyOperation>"
-    xmlDoc=X2JS.parseXmlString(xmlText);
+    var xmlText = " <MyOperation> <test>- Success -</test> <test2> TestText <item> ddsfg </item> TestText2 <item>dsdgfdgfd</item></test2></MyOperation>"
+    xmlDoc=x2js.parseXmlString(xmlText);
     
-    var jsonObj = X2JS.xml2json( xmlDoc );
-    alert (jsonObj.MyOperation.test);
+    var jsonObj = x2js.xml2json( xmlDoc );
+    console.log(jsonObj.MyOperation.test);
     
     // Parsing XML attrs
     var xmlText = "<MyOperation myAttr='SuccessAttrValue'><txtAttrChild sAttr='SUCCESS TXT ATTR CHILD'>SUCCESS TXT</txtAttrChild><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item></test2></MyOperation>";
-    var jsonObj = X2JS.xml_str2json( xmlText );
-    alert (jsonObj.MyOperation._myAttr);
-    alert (jsonObj.MyOperation.test2._myAttr);
-    alert (jsonObj.MyOperation.txtAttrChild._sAttr);
-    alert (jsonObj.MyOperation.txtAttrChild.__text);
-    alert (jsonObj.MyOperation.txtAttrChild);
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyOperation._myAttr);
+    console.log(jsonObj.MyOperation.test2._myAttr);
+    console.log(jsonObj.MyOperation.txtAttrChild._sAttr);
+    console.log(jsonObj.MyOperation.txtAttrChild.__text);
+    console.log(jsonObj.MyOperation.txtAttrChild.toString());
     
     // JSON to XML attrs
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
         {
             TestAttrRoot : {
                 _myAttr : 'myAttrValue',                
@@ -120,15 +138,40 @@
         }
     );
     
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
+    
+    //Change prefix for attributes
+    var x2jsChangedAttrs = new X2JS({    	 				
+    	// XML attributes. Default is "_"
+    	attributePrefix : "$$"
+    });
+    jsonObj = x2jsChangedAttrs.xml_str2json( xmlText );
+    console.log(jsonObj.MyOperation.$$myAttr);
+    console.log(jsonObj.MyOperation.test2.$m$yAttr);
+    console.log(jsonObj.MyOperation.txtAttrChild.$$sAttr);
+    
+    xmlDocStr = x2jsChangedAttrs.json2xml_str({
+            TestAttrRoot : {
+                _myAttr : 'myAttrValue',                
+                MyChild : 'my_child_value',
+                MyAnotherChild: 10,
+                MyTextAttrChild : {
+                    $$myTextAttr : 'myTextAttrValue',
+                    __text : 'HelloText'
+                }
+            }
+        }
+    );
+    
+    console.log(xmlDocStr);
     
     
     // Parse XML with namespaces
     var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'><test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
-    var jsonObj = X2JS.xml_str2json( xmlText );
-    alert(jsonObj.MyOperation.test);
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyOperation.test);
     if(jsonObj.MyOperation.test2.item.length > 2)
-	alert("Error! Incorrect array len!");
+	console.log("Error! Incorrect array len!");
     
     var testObjC = {
             'm:TestAttrRoot' : {
@@ -140,11 +183,11 @@
     }
     
     // Parse JSON object with namespaces
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
         testObjC
     );
     
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
     
     // Parse JSON object constructed with another NS-style
     var testObjNew = {
@@ -161,36 +204,36 @@
     }
     
     // Parse JSON object with namespaces
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
         testObjNew
     );
     
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
 
     // Parse XML with header
     var xmlText = "<?xml version='1.0' encoding='utf-8' ?>\n"+
     			  "<test>XML HEADER SUCCESS!</test>";
     
-    var jsonObj = X2JS.xml_str2json( xmlText );
-    alert(jsonObj.test);
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.test);
     
     // Parse XML with CDATA
     var xmlText = "<test><simple>simple success</simple><data><![CDATA[<success/>]]></data> </test>";
     
-    var jsonObj = X2JS.xml_str2json( xmlText );
-    alert(jsonObj.test.data);
-    alert(jsonObj.test.data.__cdata);
-    alert(jsonObj.test.simple);
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.test.data.toString());
+    console.log(jsonObj.test.data.__cdata);
+    console.log(jsonObj.test.simple);
     
     
     // Parse JSON object with CDATA
-    var xmlDocStr = X2JS.json2xml_str(
+    var xmlDocStr = x2js.json2xml_str(
         jsonObj
     );
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
 
 	// Parse JSON with emtpy attributes    
-	var xmlDocStr = X2JS.json2xml_str(
+	var xmlDocStr = x2js.json2xml_str(
         {
             MyRoot : {
                 MyNullChild : null,
@@ -207,13 +250,10 @@
         }
     );
     
-    alert(xmlDocStr);
+    console.log(xmlDocStr);
     
     // Escaping XML characters
-    
-    X2JS.escapeMode(true);
-	
-	xmlDocStr = X2JS.json2xml_str(
+	xmlDocStr = x2js.json2xml_str(
         {
             MyRoot : {
                 MyEscapeXmlChild : "<success> & \" ' / </success>",
@@ -226,17 +266,15 @@
         }
     );
 	
-	alert(xmlDocStr);
+	console.log(xmlDocStr);
 
-    jsonObj = X2JS.xml_str2json( xmlDocStr );
-    alert(jsonObj.MyRoot.MyEscapeXmlChild);
-    alert(jsonObj.MyRoot.MyEscapeXmlChild2);
-	        
-            
-    alert(X2JS.getVersion());
+    jsonObj = x2js.xml_str2json( xmlDocStr );
+    console.log(jsonObj.MyRoot.MyEscapeXmlChild);
+    console.log(jsonObj.MyRoot.MyEscapeXmlChild2.toString());
+	                    
+    console.log(x2js.getVersion());
     
-    alert('-- ALL TESTS COMPLETED! --'); 
-    -->
+    console.log('-- ALL TESTS COMPLETED! --');     
             
 </script>
 </body>

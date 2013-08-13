@@ -22,12 +22,12 @@
         }
     );
 	
-	alert(xmlDocStr);
+	console.log(xmlDocStr);
 
     jsonObj = X2JS.xml_str2json( xmlDocStr );
-    alert(jsonObj.MyRoot.MyEscapeXmlChild);
-    alert(jsonObj.MyRoot.MyEscapeXmlChild2);
-    alert(jsonObj.MyRoot.MyEscapeXmlChildNonString);
+    console.log(jsonObj.MyRoot.MyEscapeXmlChild);
+    console.log(jsonObj.MyRoot.MyEscapeXmlChild2.toString());
+    console.log(jsonObj.MyRoot.MyEscapeXmlChildNonString);
     	
 </script>
 </body>

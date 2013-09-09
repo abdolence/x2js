@@ -7,11 +7,10 @@
 <script type="text/javascript">
     var X2JS = new X2JS();
 
-    X2JS.escapeMode(true);
-	
 	xmlDocStr = X2JS.json2xml_str(
         {
             MyRoot : {
+            	EmptyXmlNode : null,
                 MyEscapeXmlChild : "<success> & \" ' / </success>",
                 MyEscapeXmlChild2 : {
                 	_attr : "success",

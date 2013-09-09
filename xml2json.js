@@ -18,7 +18,7 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.1";
+	var VERSION = "1.1.2";
 	
 	config = config || {};
 	initConfigDefaults();
@@ -30,6 +30,8 @@ function X2JS(config) {
 			config.attributePrefix = "_";
 		if(config.arrayAccessForm === undefined)
 			config.arrayAccessForm = "none";
+		if(config.emptyNodeForm === undefined)
+			config.emptyNodeForm = "text";
 	}
 
 	var DOMNodeTypes = {
@@ -128,10 +130,6 @@ function X2JS(config) {
 				result.__prefix=nodePrefix;
 			}
 			
-			if( result.__cnt == 1 && result["#text"]!=null  ) {
-				result = result["#text"];
-			} 
-			
 			if(result["#text"]!=null) {				
 				result.__text = result["#text"];
 				if(result.__text instanceof Array) {
@@ -140,17 +138,24 @@ function X2JS(config) {
 				if(config.escapeMode)
 					result.__text = unescapeXmlChars(result.__text);
 				delete result["#text"];
-				delete result["#text_asArray"];
+				if(config.arrayAccessForm=="property")
+					delete result["#text_asArray"];
 			}
 			if(result["#cdata-section"]!=null) {
 				result.__cdata = result["#cdata-section"];
 				delete result["#cdata-section"];
-				delete result["#cdata-section_asArray"];
+				if(config.arrayAccessForm=="property")
+					delete result["#cdata-section_asArray"];
 			}
 			
-			if(result.__cnt!= undefined) {
-				delete result.__cnt;
+			if( result.__cnt == 1 && result.__text!=null  ) {
+				result = result.__text;
 			}
+			else
+			if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {
+				result = '';
+			}
+			delete result.__cnt;			
 			
 			if(result.__text!=null || result.__cdata!=null) {
 				result.toString = function() {

@@ -16,9 +16,18 @@
     	escapeMode : true, 				
     	// XML attributes prefix. Default is "_"
     	attributePrefix : "_",
-    	// Array access form (none|property). Use property if you want X2JS generate additional property <element>_asArray to access in array form any element
-    	// Default is none from v1.1.0+
-    	arrayAccessForm : "none"
+    	
+    	// Array access form (none|property). 
+    	// Use this property if you want X2JS generate additional property <element>_asArray 
+    	// to access in array form any element
+    	// Default is 'none' from v1.1.0+
+    	arrayAccessForm : "none",
+    	
+    	// Handling empty nodes (text|object). 
+    	// When X2JS found empty node like <test></test> it will be transformed to test : '' for 'text' mode, 
+    	// or to Object for 'object' mode  
+    	// Default is 'text'
+    	emptyNodeForm  : "text"
     });
         
     // JSON to DOM

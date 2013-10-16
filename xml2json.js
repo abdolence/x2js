@@ -18,26 +18,32 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.2";
+	var VERSION = "1.1.3";
 	
 	config = config || {};
 	initConfigDefaults();
 	
 	function initConfigDefaults() {
-		if(config.escapeMode === undefined)
+		if(config.escapeMode === undefined) {
 			config.escapeMode = true;
-		if(config.attributePrefix === undefined)
-			config.attributePrefix = "_";
-		if(config.arrayAccessForm === undefined)
-			config.arrayAccessForm = "none";
-		if(config.emptyNodeForm === undefined)
-			config.emptyNodeForm = "text";
+		}
+		config.attributePrefix = config.attributePrefix || "_";
+		config.arrayAccessForm = config.arrayAccessForm || "none";
+		config.emptyNodeForm = config.emptyNodeForm || "text";
+		if(config.enableToStringFunc === undefined) {
+			config.enableToStringFunc = true; 
+		}
+		config.arrayAccessFormPaths = config.arrayAccessFormPaths || []; 
+		if(config.skipEmptyTextNodesForObj === undefined) {
+			config.skipEmptyTextNodesForObj = true;
+		}
 	}
 
 	var DOMNodeTypes = {
 		ELEMENT_NODE 	   : 1,
 		TEXT_NODE    	   : 3,
 		CDATA_SECTION_NODE : 4,
+		COMMENT_NODE	   : 8,
 		DOCUMENT_NODE 	   : 9
 	};
 	
@@ -65,7 +71,7 @@ function X2JS(config) {
 		return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#x2F;/g, '\/');
 	}
 	
-	function toArrayAccessForm(obj, childName) {
+	function toArrayAccessForm(obj, childName, path) {
 		switch(config.arrayAccessForm) {
 		case "property":
 			if(!(obj[childName] instanceof Array))
@@ -76,14 +82,44 @@ function X2JS(config) {
 		/*case "none":
 			break;*/
 		}
+		
+		if(!(obj[childName] instanceof Array) && config.arrayAccessFormPaths.length > 0) {
+			var idx = 0;
+			for(; idx < config.arrayAccessFormPaths.length; idx++) {
+				var arrayPath = config.arrayAccessFormPaths[idx];
+				if( typeof arrayPath === "string" ) {
+					if(arrayPath == path)
+						break;
+				}
+				else
+				if( arrayPath instanceof RegExp) {
+					if(arrayPath.test(path))
+						break;
+				}				
+				else
+				if( typeof arrayPath === "function") {
+					if(arrayPath(obj, childName, path))
+						break;
+				}
+			}
+			if(idx!=config.arrayAccessFormPaths.length) {
+				obj[childName] = [obj[childName]];
+			}
+		}
 	}
 
-	function parseDOMChildren( node ) {
+	function parseDOMChildren( node, path ) {
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
 			var result = new Object;
-			var child = node.firstChild; 
-			var childName = getNodeLocalName(child);
-			result[childName] = parseDOMChildren(child);
+			var nodeChildren = node.childNodes;
+			// Alternative for firstElementChild which is not supported in some environments
+			for(var cidx=0; cidx <nodeChildren.length; cidx++) {
+				var child = nodeChildren.item(cidx);
+				if(child.nodeType == DOMNodeTypes.ELEMENT_NODE) {
+					var childName = getNodeLocalName(child);
+					result[childName] = parseDOMChildren(child, childName);
+				}
+			}
 			return result;
 		}
 		else
@@ -98,22 +134,22 @@ function X2JS(config) {
 				var child = nodeChildren.item(cidx); // nodeChildren[cidx];
 				var childName = getNodeLocalName(child);
 				
-				result.__cnt++;
-				if(result[childName] == null) {
-					result[childName] = parseDOMChildren(child);
-					toArrayAccessForm(result, childName);					
-				}
-				else {
-					if(result[childName] != null) {
-						if( !(result[childName] instanceof Array)) {
-							result[childName] = [result[childName]];
-							toArrayAccessForm(result, childName);
-						}
+				if(child.nodeType!= DOMNodeTypes.COMMENT_NODE) {
+					result.__cnt++;
+					if(result[childName] == null) {
+						result[childName] = parseDOMChildren(child, path+"."+childName);
+						toArrayAccessForm(result, childName, path+"."+childName);					
 					}
-					var aridx = 0;
-					while(result[childName][aridx]!=null) aridx++;
-					(result[childName])[aridx] = parseDOMChildren(child);
-				}			
+					else {
+						if(result[childName] != null) {
+							if( !(result[childName] instanceof Array)) {
+								result[childName] = [result[childName]];
+								toArrayAccessForm(result, childName, path+"."+childName);
+							}
+						}
+						(result[childName])[result[childName].length] = parseDOMChildren(child, path+"."+childName);
+					}
+				}								
 			}
 			
 			// Attributes
@@ -155,9 +191,15 @@ function X2JS(config) {
 			if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {
 				result = '';
 			}
+			else
+			if ( result.__cnt > 1 && result.__text!=null && config.skipEmptyTextNodesForObj) {
+				if(result.__text.trim()=="") {
+					delete result.__text;
+				}
+			}
 			delete result.__cnt;			
 			
-			if(result.__text!=null || result.__cdata!=null) {
+			if( config.enableToStringFunc && result.__text!=null || result.__cdata!=null ) {
 				result.toString = function() {
 					return (this.__text!=null? this.__text:'')+( this.__cdata!=null ? this.__cdata:'');
 				};

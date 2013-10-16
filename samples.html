@@ -1,16 +1,16 @@
 <html>
 <head>
-    <script type="text/javascript" src="xml2json.js"></script>
+    <script type="text/javascript" src="xml2json.min.js"></script>
 </head>
 <body>
 <h1>X2JS samples html</h1>
 
 <script type="text/javascript">
 
-	// Create x2js instance with default config
+    // Create x2js instance with default config
     var x2js = new X2JS();
 	
- 	// Available options
+    // Available options
     var x2jsOptionsSample = new X2JS({
     	// Escaping XML characters. Default is true from v1.1.0+
     	escapeMode : true, 				
@@ -27,7 +27,21 @@
     	// When X2JS found empty node like <test></test> it will be transformed to test : '' for 'text' mode, 
     	// or to Object for 'object' mode  
     	// Default is 'text'
-    	emptyNodeForm  : "text"
+    	emptyNodeForm  : "text",
+    	
+    	// Enable/Disable auxiliary function in generated JSON object to print text nodes with __text/__cdata
+    	// Default is true
+    	enableToStringFunc : true,
+    	
+    	// Array access paths (array). 
+    	// Use this option to configure paths to XML elements always in "array form". 
+    	// You can configure beforehand paths to all your array elements based on XSD or your knowledge
+    	// about XML structure
+    	// Every path could be a simple string (like 'parent.child1.child2'), a regex (like /.*\.child2/), or a custom function
+	arrayAccessFormPaths : [],
+
+	// Skip empty text tags for nodes with children
+	skipEmptyTextNodesForObj : true
     });
         
     // JSON to DOM
@@ -156,7 +170,7 @@
     });
     jsonObj = x2jsChangedAttrs.xml_str2json( xmlText );
     console.log(jsonObj.MyOperation.$$myAttr);
-    console.log(jsonObj.MyOperation.test2.$m$yAttr);
+    console.log(jsonObj.MyOperation.test2.$$myAttr);
     console.log(jsonObj.MyOperation.txtAttrChild.$$sAttr);
     
     xmlDocStr = x2jsChangedAttrs.json2xml_str({
@@ -227,7 +241,7 @@
     console.log(jsonObj.test);
     
     // Parse XML with CDATA
-    var xmlText = "<test><simple>simple success</simple><data><![CDATA[<success/>]]></data> </test>";
+    var xmlText = "<!-- Root comment --><test><simple>simple success</simple><data><![CDATA[<CDATA success/>]]></data> </test>";
     
     var jsonObj = x2js.xml_str2json( xmlText );
     console.log(jsonObj.test.data.toString());
@@ -280,6 +294,27 @@
     jsonObj = x2js.xml_str2json( xmlDocStr );
     console.log(jsonObj.MyRoot.MyEscapeXmlChild);
     console.log(jsonObj.MyRoot.MyEscapeXmlChild2.toString());
+    
+    // Array access path 
+    x2js = new X2JS({
+    	arrayAccessFormPaths : [
+		   "MyArrays.test4.item",
+    	   /.*\.test3\.item/
+    	]
+    });
+
+    xmlText = "<MyArrays>"+
+    		"<test2><item>success</item><item>second</item></test2>"+
+    		"<test3><item>success</item></test3>"+
+    		"<test4><item>success</item></test4>"+
+    		"<test5><item>success</item></test5>"+
+    	"</MyOperation>";
+    
+    	
+    jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyArrays.test3.item[0]);
+    console.log(jsonObj.MyArrays.test4.item[0]);
+    console.log(jsonObj.MyArrays.test5.item);
 	                    
     console.log(x2js.getVersion());
     

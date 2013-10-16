@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<script type='text/javascript' src='https://code.jquery.com/jquery-git.js'></script>
+<script type='text/javascript' src="https://x2js.googlecode.com/hg/xml2json.js"></script>
+
+<script type='text/javascript'>//<![CDATA[ 
+$(window).load(function(){
+	var x2js = new X2JS();
+	function convertXml2JSon() {
+    	$("#jsonArea").val(JSON.stringify(x2js.xml_str2json($("#xmlArea").val())));
+	}
+
+	function convertJSon2XML() {
+	    $("#xmlArea").val(x2js.json2xml_str($.parseJSON($("#jsonArea").val())));
+	}
+
+	$("#xmlArea").val("<root><child><textNode>First &amp; Child</textNode></child><child><textNode>Second Child</textNode></child><testAttrs attr1='attr1Value'/></root>");
+	convertXml2JSon();
+	convertJSon2XML();
+	$("#convertToJsonBtn").click(convertXml2JSon);
+	$("#convertToXmlBtn").click(convertJSon2XML);
+});//]]>  
+</script>
+</head>
+<body>
+    <h1>X2JS Demo</h1>
+    <button id="convertToJsonBtn">XML => JSON</button>
+    <button id="convertToXmlBtn">JSON => XML</button>    
+    <div>        
+        <h4>XML:</h4>
+        <textarea id="xmlArea" cols="55" rows="15"></textarea>
+    </div>
+    
+    <div>
+        <h4>JSON:</h4>
+        <textarea id="jsonArea" cols="55" rows="15"></textarea>
+    </div>    
+</body>
+</html>

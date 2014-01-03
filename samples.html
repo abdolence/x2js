@@ -1,6 +1,7 @@
 <html>
 <head>
     <script type="text/javascript" src="xml2json.min.js"></script>
+    <!-- script type="text/javascript" src="xml2json.js"></script-->
 </head>
 <body>
 <h1>X2JS samples html</h1>
@@ -38,10 +39,23 @@
     	// You can configure beforehand paths to all your array elements based on XSD or your knowledge
     	// about XML structure
     	// Every path could be a simple string (like 'parent.child1.child2'), a regex (like /.*\.child2/), or a custom function
-	arrayAccessFormPaths : [],
+    	// Default is empty array
+		arrayAccessFormPaths : [],
 
-	// Skip empty text tags for nodes with children
-	skipEmptyTextNodesForObj : true
+		// Strip whitespaces (trimming text nodes)
+		stripWhitespaces : true,
+		
+		// Skip empty text tags for nodes with children
+		skipEmptyTextNodesForObj : true,
+		
+		// DateTime access paths (array). 
+    	// Use this option to configure paths to XML elements for "datetimes form". 
+    	// You can configure beforehand paths to all your array elements based on XSD or your knowledge
+    	// about XML structure
+    	// Every path could be a simple string (like 'parent.child1.child2'), a regex (like /.*\.child2/), or a custom function
+    	// Default is empty array
+		datetimeAccessFormPaths : []
+		
     });
         
     // JSON to DOM
@@ -281,7 +295,7 @@
             MyRoot : {
                 MyEscapeXmlChild : "<success> & \" ' / </success>",
                 MyEscapeXmlChild2 : {
-                	_attr : "success",
+                	_attr : "success&",
                 	__text : "<success> & \" ' / </success>"
                 },
                 MyEscapeXmlChildNonString : false
@@ -293,6 +307,7 @@
 
     jsonObj = x2js.xml_str2json( xmlDocStr );
     console.log(jsonObj.MyRoot.MyEscapeXmlChild);
+    console.log(jsonObj.MyRoot.MyEscapeXmlChild2._attr);
     console.log(jsonObj.MyRoot.MyEscapeXmlChild2.toString());
     
     // Array access path 
@@ -308,13 +323,34 @@
     		"<test3><item>success</item></test3>"+
     		"<test4><item>success</item></test4>"+
     		"<test5><item>success</item></test5>"+
-    	"</MyOperation>";
+    	"</MyArrays>";
     
     	
     jsonObj = x2js.xml_str2json( xmlText );
     console.log(jsonObj.MyArrays.test3.item[0]);
     console.log(jsonObj.MyArrays.test4.item[0]);
     console.log(jsonObj.MyArrays.test5.item);
+    
+    // Working with datetimes
+    x2js = new X2JS({
+    	datetimeAccessFormPaths : [
+		   "MyDts.testds",
+    	   /.*\.testdt.*/
+    	]
+    });
+
+    xmlText = "<MyDts>"+
+    		"<testds>2002-10-10T12:00:00+04:00</testds>"+
+    		"<testdt1>2002-10-10T12:00:00Z</testdt1>"+
+    		"<testdt2>2002-10-10T12:00:00</testdt2>"+
+    		"<testdc>2002-10-10T12:00:00Z</testdc>"+    		
+    	"</MyDts>";
+    jsonObj = x2js.xml_str2json( xmlText );
+    	
+    console.log(jsonObj.MyDts.testds);
+    console.log(jsonObj.MyDts.testdt1);
+    console.log(jsonObj.MyDts.testdt2);
+    console.log(x2js.asDateTime( jsonObj.MyDts.testdc ));
 	                    
     console.log(x2js.getVersion());
     

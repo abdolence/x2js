@@ -18,7 +18,7 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.4";
+	var VERSION = "1.1.5";
 	
 	config = config || {};
 	initConfigDefaults();
@@ -474,18 +474,33 @@ function X2JS(config) {
 	}
 	
 	this.parseXmlString = function(xmlDocStr) {
+		var isIEParser = window.ActiveXObject || "ActiveXObject" in window;
 		if (xmlDocStr === undefined) {
 			return null;
 		}
 		var xmlDoc;
 		if (window.DOMParser) {
 			var parser=new window.DOMParser();			
-			var parsererrorNS = parser.parseFromString('INVALID', 'text/xml').childNodes[0].namespaceURI;
-			xmlDoc = parser.parseFromString( xmlDocStr, "text/xml" );
-			if(xmlDoc.getElementsByTagNameNS(parsererrorNS, 'parsererror').length > 0) {
-		        //throw new Error('Error parsing XML: '+xmlDocStr);
+			var parsererrorNS = null;
+			// IE9+ now is here
+			if(!isIEParser) {
+				try {
+					parsererrorNS = parser.parseFromString("INVALID", "text/xml").childNodes[0].namespaceURI;
+				}
+				catch(err) {					
+					parsererrorNS = null;
+				}
+			}
+			try {
+				xmlDoc = parser.parseFromString( xmlDocStr, "text/xml" );
+				if( parsererrorNS!= null && xmlDoc.getElementsByTagNameNS(parsererrorNS, "parsererror").length > 0) {
+					//throw new Error('Error parsing XML: '+xmlDocStr);
+					xmlDoc = null;
+				}
+			}
+			catch(err) {
 				xmlDoc = null;
-		    }
+			}
 		}
 		else {
 			// IE :(

@@ -22,23 +22,13 @@
     });
 
     var xmlText =
-    	"<!-- Test comment -->"+
     "<MyOperation myAttr='SuccessAttrValue'>"+
-    "<txtAttrChild sAttr='SUCCESS TXT ATTR CHILD'>SUCCESS TXT<!-- comment --></txtAttrChild><test>Success</test>"+
-    "<test2 myAttr='SuccessAttrValueTest2&amp;'><item>first</item><item>second</item></test2>"+
-    "<test3><item>first </item></test3>"+
-    "<test4><item>first</item></test4>"+
-    "<test5><item>first</item></test5>"+
     "<testdt>2002-10-10T12:00:00-05:00</testdt>"+
-    "<!-- comment2 -->"+
+    "<description>&lt; --&gt; &amp;lt;</description>"+
     "</MyOperation>";
     var jsonObj = x2js.xml_str2json( xmlText );
-    console.log(jsonObj.MyOperation._myAttr);
-    console.log(jsonObj.MyOperation.test2._myAttr);
-    console.log(jsonObj.MyOperation.txtAttrChild._sAttr);
-    console.log(jsonObj.MyOperation.txtAttrChild.__text);
-    console.log(jsonObj.MyOperation.txtAttrChild.toString());
     console.log(jsonObj.MyOperation.testdt);
+    console.log(jsonObj.MyOperation.description);
     
     console.log( x2js.json2xml_str( jsonObj ) );
     

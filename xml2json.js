@@ -18,7 +18,7 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.5";
+	var VERSION = "1.1.7";
 	
 	config = config || {};
 	initConfigDefaults();
@@ -42,6 +42,10 @@ function X2JS(config) {
 			config.stripWhitespaces = true;
 		}
 		config.datetimeAccessFormPaths = config.datetimeAccessFormPaths || [];
+
+		if(config.useDoubleQuotes === undefined) {
+			config.useDoubleQuotes = false;
+		}
 	}
 
 	var DOMNodeTypes = {
@@ -96,13 +100,13 @@ function X2JS(config) {
 		
 	function escapeXmlChars(str) {
 		if(typeof(str) == "string")
-			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;').replace(/\//g, '&#x2F;');
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
 		else
 			return str;
 	}
 
 	function unescapeXmlChars(str) {
-		return str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&#x2F;/g, '\/');
+		return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
 	}
 	
 	function toArrayAccessForm(obj, childName, path) {
@@ -267,8 +271,8 @@ function X2JS(config) {
 				if(result.__text instanceof Array) {
 					result.__text = result.__text.join("\n");
 				}
-				if(config.escapeMode)
-					result.__text = unescapeXmlChars(result.__text);
+				//if(config.escapeMode)
+				//	result.__text = unescapeXmlChars(result.__text);
 				if(config.stripWhitespaces)
 					result.__text = result.__text.trim();
 				delete result["#text"];
@@ -320,7 +324,11 @@ function X2JS(config) {
 				var attrVal = jsonObj[attrName];
 				if(config.escapeMode)
 					attrVal=escapeXmlChars(attrVal);
-				resultStr+=" "+attrName.substr(config.attributePrefix.length)+"='"+attrVal+"'";
+				resultStr+=" "+attrName.substr(config.attributePrefix.length)+"=";
+				if(config.useDoubleQuotes)
+					resultStr+='"'+attrVal+'"';
+				else
+					resultStr+="'"+attrVal+"'";
 			}
 		}
 		if(!closed)
@@ -515,6 +523,9 @@ function X2JS(config) {
 	};
 	
 	this.asArray = function(prop) {
+		if (prop === undefined || prop == null)
+			return [];
+		else
 		if(prop instanceof Array)
 			return prop;
 		else

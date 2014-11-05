@@ -18,7 +18,7 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.7";
+	var VERSION = "1.1.8";
 	
 	config = config || {};
 	initConfigDefaults();
@@ -28,7 +28,7 @@ function X2JS(config) {
 		if(config.escapeMode === undefined) {
 			config.escapeMode = true;
 		}
-		config.attributePrefix = config.attributePrefix || "_";
+		config.attributePrefix = (config.attributePrefix !== null) ? config.attributePrefix : "_";
 		config.arrayAccessForm = config.arrayAccessForm || "none";
 		config.emptyNodeForm = config.emptyNodeForm || "text";
 		if(config.enableToStringFunc === undefined) {
@@ -40,6 +40,9 @@ function X2JS(config) {
 		}
 		if(config.stripWhitespaces === undefined) {
 			config.stripWhitespaces = true;
+		}
+		if(config.keepCdata === undefined) {
+			config.keepCdata = true;
 		}
 		config.datetimeAccessFormPaths = config.datetimeAccessFormPaths || [];
 
@@ -286,9 +289,14 @@ function X2JS(config) {
 				if(config.arrayAccessForm=="property")
 					delete result["#cdata-section_asArray"];
 			}
-			
-			if( result.__cnt == 1 && result.__text!=null  ) {
-				result = result.__text;
+
+			if( result.__cnt == 1 ) {
+				if( result.__text!=null ) {
+					result = result.__text;
+				}
+				if( result.__cdata!=null && !config.keepCdata ) {
+					result = result.__cdata;
+				}
 			}
 			else
 			if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {

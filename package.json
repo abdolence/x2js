@@ -1,0 +1,13 @@
+{
+  "name": "x2js",
+  "version": "1.1.7",
+  "main": "xml2json.js",
+  "description": "XML <=> JSON mapping/converting library",
+  "license": "Apache Licence v2",
+  "ignore": [
+    ".hg*",
+    ".project",
+    "*.html",
+    "**/*.txt"
+  ]
+}

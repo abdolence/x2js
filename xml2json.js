@@ -18,7 +18,7 @@
 function X2JS(config) {
 	'use strict';
 		
-	var VERSION = "1.1.7";
+	var VERSION = "1.2.0";
 	
 	config = config || {};
 	initConfigDefaults();
@@ -28,9 +28,11 @@ function X2JS(config) {
 		if(config.escapeMode === undefined) {
 			config.escapeMode = true;
 		}
+		
 		config.attributePrefix = config.attributePrefix || "_";
 		config.arrayAccessForm = config.arrayAccessForm || "none";
-		config.emptyNodeForm = config.emptyNodeForm || "text";
+		config.emptyNodeForm = config.emptyNodeForm || "text";		
+		
 		if(config.enableToStringFunc === undefined) {
 			config.enableToStringFunc = true; 
 		}
@@ -46,6 +48,8 @@ function X2JS(config) {
 		if(config.useDoubleQuotes === undefined) {
 			config.useDoubleQuotes = false;
 		}
+		
+		config.xmlElementsFilter = config.xmlElementsFilter || [];
 	}
 
 	var DOMNodeTypes = {
@@ -56,33 +60,7 @@ function X2JS(config) {
 		DOCUMENT_NODE 	   : 9
 	};
 	
-	function initRequiredPolyfills() {
-		function pad(number) {
-	      var r = String(number);
-	      if ( r.length === 1 ) {
-	        r = '0' + r;
-	      }
-	      return r;
-	    }
-		// Hello IE8-
-		if(typeof String.prototype.trim !== 'function') {			
-			String.prototype.trim = function() {
-				return this.replace(/^\s+|^\n+|(\s|\n)+$/g, '');
-			}
-		}
-		if(typeof Date.prototype.toISOString !== 'function') {
-			// Implementation from http://stackoverflow.com/questions/2573521/how-do-i-output-an-iso-8601-formatted-string-in-javascript
-			Date.prototype.toISOString = function() {
-		      return this.getUTCFullYear()
-		        + '-' + pad( this.getUTCMonth() + 1 )
-		        + '-' + pad( this.getUTCDate() )
-		        + 'T' + pad( this.getUTCHours() )
-		        + ':' + pad( this.getUTCMinutes() )
-		        + ':' + pad( this.getUTCSeconds() )
-		        + '.' + String( (this.getUTCMilliseconds()/1000).toFixed(3) ).slice( 2, 5 )
-		        + 'Z';
-		    };
-		}
+	function initRequiredPolyfills() {		
 	}
 	
 	function getNodeLocalName( node ) {
@@ -109,40 +87,44 @@ function X2JS(config) {
 		return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
 	}
 	
+	function checkInStdFiltersArrayForm(stdFiltersArrayForm, obj, name, path) {
+        var idx = 0;
+		for(; idx < stdFiltersArrayForm.length; idx++) {
+			var filterPath = stdFiltersArrayForm[idx];
+			if( typeof filterPath === "string" ) {
+				if(filterPath == path)
+					break;
+			}
+			else
+			if( filterPath instanceof RegExp) {
+				if(filterPath.test(path))
+					break;
+			}				
+			else
+			if( typeof filterPath === "function") {
+				if(filterPath(obj, name, path))
+					break;
+			}
+		}
+		return idx!=stdFiltersArrayForm.length;
+    }
+	
 	function toArrayAccessForm(obj, childName, path) {
 		switch(config.arrayAccessForm) {
-		case "property":
-			if(!(obj[childName] instanceof Array))
-				obj[childName+"_asArray"] = [obj[childName]];
-			else
-				obj[childName+"_asArray"] = obj[childName];
-			break;		
-		/*case "none":
-			break;*/
+			case "property":
+				if(!(obj[childName] instanceof Array))
+					obj[childName+"_asArray"] = [obj[childName]];
+				else
+					obj[childName+"_asArray"] = obj[childName];
+				break;
+			/*case "none":
+				break;*/
 		}
 		
 		if(!(obj[childName] instanceof Array) && config.arrayAccessFormPaths.length > 0) {
-			var idx = 0;
-			for(; idx < config.arrayAccessFormPaths.length; idx++) {
-				var arrayPath = config.arrayAccessFormPaths[idx];
-				if( typeof arrayPath === "string" ) {
-					if(arrayPath == path)
-						break;
-				}
-				else
-				if( arrayPath instanceof RegExp) {
-					if(arrayPath.test(path))
-						break;
-				}				
-				else
-				if( typeof arrayPath === "function") {
-					if(arrayPath(obj, childName, path))
-						break;
-				}
-			}
-			if(idx!=config.arrayAccessFormPaths.length) {
+			if(checkInStdFiltersArrayForm(config.arrayAccessFormPaths, obj, childName, path)) {
 				obj[childName] = [obj[childName]];
-			}
+			}			
 		}
 	}
 	
@@ -180,33 +162,23 @@ function X2JS(config) {
 	function checkFromXmlDateTimePaths(value, childName, fullPath) {
 		if(config.datetimeAccessFormPaths.length > 0) {
 			var path = fullPath.split("\.#")[0];
-			var idx = 0;
-			for(; idx < config.datetimeAccessFormPaths.length; idx++) {
-				var dtPath = config.datetimeAccessFormPaths[idx];
-				if( typeof dtPath === "string" ) {
-					if(dtPath == path)
-						break;
-				}
-				else
-				if( dtPath instanceof RegExp) {
-					if(dtPath.test(path))
-						break;
-				}				
-				else
-				if( typeof dtPath === "function") {
-					if(dtPath(obj, childName, path))
-						break;
-				}
-			}
-			if(idx!=config.datetimeAccessFormPaths.length) {
+			if(checkInStdFiltersArrayForm(config.datetimeAccessFormPaths, value, childName, path)) {
 				return fromXmlDateTime(value);
 			}
 			else
-				return value;
+				return value;			
 		}
 		else
 			return value;
 	}
+	
+	function checkXmlElementsFilter(obj, childType, childName, childPath) {
+        if( childType == DOMNodeTypes.ELEMENT_NODE && config.xmlElementsFilter.length > 0) {
+			return checkInStdFiltersArrayForm(config.xmlElementsFilter, obj, childName, childPath);	
+		}
+		else
+			return true;
+    }	
 
 	function parseDOMChildren( node, path ) {
 		if(node.nodeType == DOMNodeTypes.DOCUMENT_NODE) {
@@ -235,19 +207,22 @@ function X2JS(config) {
 				var childName = getNodeLocalName(child);
 				
 				if(child.nodeType!= DOMNodeTypes.COMMENT_NODE) {
-					result.__cnt++;
-					if(result[childName] == null) {
-						result[childName] = parseDOMChildren(child, path+"."+childName);
-						toArrayAccessForm(result, childName, path+"."+childName);					
-					}
-					else {
-						if(result[childName] != null) {
-							if( !(result[childName] instanceof Array)) {
-								result[childName] = [result[childName]];
-								toArrayAccessForm(result, childName, path+"."+childName);
-							}
+					var childPath = path+"."+childName;
+					if (checkXmlElementsFilter(result,child.nodeType,childName,childPath)) {
+						result.__cnt++;
+						if(result[childName] == null) {
+							result[childName] = parseDOMChildren(child, childPath);
+							toArrayAccessForm(result, childName, childPath);					
 						}
-						(result[childName])[result[childName].length] = parseDOMChildren(child, path+"."+childName);
+						else {
+							if(result[childName] != null) {
+								if( !(result[childName] instanceof Array)) {
+									result[childName] = [result[childName]];
+									toArrayAccessForm(result, childName, childPath);
+								}
+							}
+							(result[childName])[result[childName].length] = parseDOMChildren(child, childPath);
+						}
 					}
 				}								
 			}
@@ -493,7 +468,7 @@ function X2JS(config) {
 			// IE9+ now is here
 			if(!isIEParser) {
 				try {
-					parsererrorNS = parser.parseFromString("INVALID", "text/xml").childNodes[0].namespaceURI;
+					parsererrorNS = parser.parseFromString("INVALID", "text/xml").getElementsByTagName("parsererror")[0].namespaceURI;
 				}
 				catch(err) {					
 					parsererrorNS = null;

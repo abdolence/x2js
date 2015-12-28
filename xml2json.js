@@ -50,6 +50,7 @@ function X2JS(config) {
 		}
 		
 		config.xmlElementsFilter = config.xmlElementsFilter || [];
+		config.jsonPropertiesFilter = config.jsonPropertiesFilter || [];
 	}
 
 	var DOMNodeTypes = {
@@ -78,13 +79,13 @@ function X2JS(config) {
 		
 	function escapeXmlChars(str) {
 		if(typeof(str) == "string")
-			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+			return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
 		else
 			return str;
 	}
 
 	function unescapeXmlChars(str) {
-		return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#x27;/g, "'").replace(/&amp;/g, '&');
+		return str.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&apos;/g, "'").replace(/&amp;/g, '&');
 	}
 	
 	function checkInStdFiltersArrayForm(stdFiltersArrayForm, obj, name, path) {
@@ -343,6 +344,12 @@ function X2JS(config) {
 		return elementsCnt;
 	}
 	
+	function checkJsonObjPropertiesFilter(jsonObj, propertyName, jsonObjPath) {
+        return config.jsonPropertiesFilter.length == 0
+			|| jsonObjPath==""
+			|| checkInStdFiltersArrayForm(config.jsonPropertiesFilter, jsonObj, propertyName, jsonObjPath);	
+    }
+	
 	function parseJSONAttributes ( jsonObj ) {
 		var attrList = [];
 		if(jsonObj instanceof Object ) {
@@ -388,7 +395,15 @@ function X2JS(config) {
 		return result;
 	}
 	
-	function parseJSONArray ( jsonArrRoot, jsonArrObj, attrList ) {
+	function getJsonPropertyPath(jsonObjPath, jsonPropName) {
+		if (jsonObjPath==="") {
+            return jsonPropName;
+        }
+		else
+			return jsonObjPath+"."+jsonPropName;
+    }
+	
+	function parseJSONArray ( jsonArrRoot, jsonArrObj, attrList, jsonObjPath ) {
 		var result = ""; 
 		if(jsonArrRoot.length == 0) {
 			result+=startTag(jsonArrRoot, jsonArrObj, attrList, true);
@@ -396,14 +411,14 @@ function X2JS(config) {
 		else {
 			for(var arIdx = 0; arIdx < jsonArrRoot.length; arIdx++) {
 				result+=startTag(jsonArrRoot[arIdx], jsonArrObj, parseJSONAttributes(jsonArrRoot[arIdx]), false);
-				result+=parseJSONObject(jsonArrRoot[arIdx]);
-				result+=endTag(jsonArrRoot[arIdx],jsonArrObj);						
+				result+=parseJSONObject(jsonArrRoot[arIdx], getJsonPropertyPath(jsonObjPath,jsonArrObj));
+				result+=endTag(jsonArrRoot[arIdx],jsonArrObj);
 			}
 		}
 		return result;
 	}
 	
-	function parseJSONObject ( jsonObj ) {
+	function parseJSONObject ( jsonObj, jsonObjPath ) {
 		var result = "";	
 
 		var elementsCnt = jsonXmlElemCount ( jsonObj );
@@ -411,7 +426,7 @@ function X2JS(config) {
 		if(elementsCnt > 0) {
 			for( var it in jsonObj ) {
 				
-				if(jsonXmlSpecialElem ( jsonObj, it) )
+				if(jsonXmlSpecialElem ( jsonObj, it) || (jsonObjPath!="" && !checkJsonObjPropertiesFilter(jsonObj, it, getJsonPropertyPath(jsonObjPath,it))) )
 					continue;			
 				
 				var subObj = jsonObj[it];						
@@ -425,7 +440,7 @@ function X2JS(config) {
 				if(subObj instanceof Object) {
 					
 					if(subObj instanceof Array) {					
-						result+=parseJSONArray( subObj, it, attrList );					
+						result+=parseJSONArray( subObj, it, attrList, jsonObjPath );					
 					}
 					else if(subObj instanceof Date) {
 						result+=startTag(subObj, it, attrList, false);
@@ -436,7 +451,7 @@ function X2JS(config) {
 						var subObjElementsCnt = jsonXmlElemCount ( subObj );
 						if(subObjElementsCnt > 0 || subObj.__text!=null || subObj.__cdata!=null) {
 							result+=startTag(subObj, it, attrList, false);
-							result+=parseJSONObject(subObj);
+							result+=parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it));
 							result+=endTag(subObj,it);
 						}
 						else {
@@ -538,7 +553,7 @@ function X2JS(config) {
 	};
 
 	this.json2xml_str = function (jsonObj) {
-		return parseJSONObject ( jsonObj );
+		return parseJSONObject ( jsonObj, "" );
 	};
 
 	this.json2xml = function (jsonObj) {
@@ -548,6 +563,5 @@ function X2JS(config) {
 	
 	this.getVersion = function () {
 		return VERSION;
-	};
-	
+	};	
 }

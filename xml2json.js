@@ -51,6 +51,10 @@ function X2JS(config) {
 		
 		config.xmlElementsFilter = config.xmlElementsFilter || [];
 		config.jsonPropertiesFilter = config.jsonPropertiesFilter || [];
+		
+		if(config.keepCData === undefined) {
+			config.keepCData = false;
+		}
 	}
 
 	var DOMNodeTypes = {
@@ -263,14 +267,18 @@ function X2JS(config) {
 					delete result["#cdata-section_asArray"];
 			}
 			
-			if( result.__cnt == 1 && result.__text!=null  ) {
-				result = result.__text;
-			}
-			else
 			if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {
 				result = '';
 			}
 			else
+			if( result.__cnt == 1 && result.__text!=null  ) {
+				result = result.__text;
+			}
+			else
+			if( result.__cnt == 1 && result.__cdata!=null && !config.keepCData  ) {
+				result = result.__cdata;
+			}			
+			else			
 			if ( result.__cnt > 1 && result.__text!=null && config.skipEmptyTextNodesForObj) {
 				if( (config.stripWhitespaces && result.__text=="") || (result.__text.trim()=="")) {
 					delete result.__text;

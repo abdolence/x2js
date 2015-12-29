@@ -25,6 +25,7 @@
     var xmlText =
     "<MyOperation myAttr='SuccessAttrValue'>"+
     "<testdt>2002-10-10T12:00:00-05:00</testdt>"+
+	"<ctest><![CDATA[Hello world!]]></ctest>"+
     "<description test-attr='hey'>&lt; --&gt; &amp;lt;</description>"+
     "</MyOperation>";
     var jsonObj = x2js.xml_str2json( xmlText );

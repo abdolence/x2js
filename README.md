@@ -63,3 +63,189 @@ var jsonObj = {
 };
 var xmlAsStr = x2js.json2xml_str( jsonObj );
 ```
+
+# Working with arrays
+
+## Configure XML structure knowledge beforehand
+
+```
+    var x2js = new X2JS({
+        arrayAccessFormPaths : [
+           "MyArrays.test.item"
+        ]
+    });
+
+
+    var xmlText = "<MyArrays>"+
+        "<test><item>success</item><item>second</item></test>"+
+        "</MyArrays>";
+        
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyArrays.test2.item[0]);
+```
+
+## Or using the utility function
+
+```
+    var x2js = new X2JS();
+    var xmlText = "<MyArrays>"+
+            "<test><item>success</item><item>second</item></test>"+
+            "</MyArrays>";
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(x2js.asArray(jsonObj.MyArrays.test.item)[0]);
+```
+
+# Working with XML attributes
+
+## Accessing to XML attributes
+
+```
+    // Create x2js instance with default config
+    var x2js = new X2JS();   
+
+    var xmlText = "<MyOperation myAttr='SuccessAttrValue'>MyText</MyOperation>";
+    var jsonObj = x2js.xml_str2json( xmlText );
+
+    // Access to attribute
+    console.log(jsonObj.MyOperation._myAttr);
+
+    // Access to text
+    console.log(jsonObj.MyOperation.__text);
+    // Or
+    console.log(jsonObj.MyOperation.toString());
+```
+
+## Configuring a custom prefix to attributes
+
+```
+    var x2js = new X2JS({
+        attributePrefix : "$"
+    });
+    
+    var xmlText = "<MyOperation myAttr='SuccessAttrValue'>MyText</MyOperation>";
+
+    var jsonObj = x2js.xml_str2json( xmlText );
+
+    // Access to attribute
+    console.log(jsonObj.MyOperation.$myAttr);
+```
+
+# Working with XML namespaces
+
+## Parsing XML with namespaces
+
+```
+    var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'>"+
+        "<test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
+
+    var jsonObj = x2js.xml_str2json( xmlText );
+    console.log(jsonObj.MyOperation.test);
+```
+
+## Creating JSON (for XML) with namespaces (Option 1)
+
+```
+    var testObjC = {
+            'm:TestAttrRoot' : {
+                '_tns:m' : 'http://www.example.org',
+                '_tns:cms' : 'http://www.example.org',
+                MyChild : 'my_child_value',
+                'cms:MyAnotherChild' : 'vdfd'
+            }
+    }
+    
+    var xmlDocStr = x2js.json2xml_str(
+        testObjC
+    );
+```
+
+## Creating JSON (for XML) with namespaces (Option 2)
+
+```
+    // Parse JSON object constructed with another NS-style
+    var testObjNew = {
+            TestAttrRoot : {
+                __prefix : 'm',
+                '_tns:m' : 'http://www.example.org',
+                '_tns:cms' : 'http://www.example.org',
+                MyChild : 'my_child_value',
+                MyAnotherChild : {
+                        __prefix : 'cms',
+                        __text : 'vdfd'
+                }
+            }
+    }
+    
+    var xmlDocStr = x2js.json2xml_str(
+        testObjNew
+    );
+```
+
+# Working with XML DateTime
+
+## Configuring it beforehand
+
+```
+    var x2js = new X2JS({
+        datetimeAccessFormPaths : [
+           "MyDts.testds" /* Configure it beforehand */
+        ]
+    });
+
+    var xmlText = "<MyDts>"+
+                "<testds>2002-10-10T12:00:00+04:00</testds>"+
+        "</MyDts>";
+    var jsonObj = x2js.xml_str2json( xmlText );
+```
+
+## Or using the utility function
+
+```
+    var x2js = new X2JS();
+
+    var xmlText = "<MyDts>"+
+                "<testds>2002-10-10T12:00:00+04:00</testds>"+
+        "</MyDts>";
+    var jsonObj = x2js.xml_str2json( xmlText );
+
+    console.log(x2js.asDateTime( jsonObj.MyDts.testds ));
+```
+
+# Networking samples
+
+## Parsing AJAX XML response (JQuery sample)
+
+```
+    $.ajax({
+        type: "GET",
+        url: "/test",
+        dataType: "xml",
+        success: function(xmlDoc) {
+            var x2js = new X2JS();
+            var jsonObj = x2js.xml2json(xmlDoc);
+      
+        }
+    });
+```
+
+## Loading XML and converting to JSON
+
+```
+    function loadXMLDoc(dname) {
+        if (window.XMLHttpRequest) {
+            xhttp=new XMLHttpRequest();
+        }
+        else {
+            xhttp=new ActiveXObject("Microsoft.XMLHTTP");
+        }
+        xhttp.open("GET",dname,false);
+        xhttp.send();
+        return xhttp.responseXML;
+    }
+
+
+    var xmlDoc = loadXMLDoc("test.xml");
+    var x2js = new X2JS();
+    var jsonObj = x2js.xml2json(xmlDoc);
+```
+

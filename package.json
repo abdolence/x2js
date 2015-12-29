@@ -1,7 +1,7 @@
 {
-  "name": "x2js",
+  "name": "abdmob/x2js",
   "version": "1.2.0",
-  "main": "xml2json.js",
+  "main": "xml2json.min.js",
   "description": "XML <=> JSON mapping/converting library",
   "license": "Apache Licence v2",
   "ignore": [

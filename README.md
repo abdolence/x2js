@@ -136,7 +136,8 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ```
     var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'>"+
-        "<test>Success</test><test2 myAttr='SuccessAttrValueTest2'><item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
+        "<test>Success</test><test2 myAttr='SuccessAttrValueTest2'>"+
+        "<item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
 
     var jsonObj = x2js.xml_str2json( xmlText );
     console.log(jsonObj.MyOperation.test);

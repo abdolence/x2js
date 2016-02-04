@@ -9,5 +9,8 @@
     ".project",
     "*.html",
     "**/*.txt"
-  ]
+  ],
+  "devDependencies": {
+    "qunit": "^1.21.0"
+  }
 }

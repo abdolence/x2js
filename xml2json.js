@@ -315,6 +315,8 @@
 				for(var aidx = 0; aidx < attrList.length; aidx++) {
 					var attrName = attrList[aidx];
 					var attrVal = jsonObj[attrName];
+					if (attrVal == undefined)
+					    continue;
 					if(config.escapeMode)
 						attrVal=escapeXmlChars(attrVal);
 					resultStr+=" "+attrName.substr(config.attributePrefix.length)+"=";

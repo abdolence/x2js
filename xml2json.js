@@ -276,7 +276,7 @@
 						delete result["#cdata-section_asArray"];
 				}
 				
-				if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {
+				if( result.__cnt == 0 && config.emptyNodeForm=="text"  && !config.alwaysObjects) {
 					result = '';
 				}
 				else

@@ -280,7 +280,7 @@
 					result = '';
 				}
 				else
-				if( result.__cnt == 1 && result.__text!=null  ) {
+				if( result.__cnt == 1 && result.__text!=null  && !config.alwaysObjects ) {
 					result = result.__text;
 				}
 				else

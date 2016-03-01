@@ -280,11 +280,11 @@
 					result = '';
 				}
 				else
-				if( result.__cnt == 1 && result.__text!=null  ) {
+				if( result.__cnt == 1 && result.__text!=null  && !config.alwaysObjects ) {
 					result = result.__text;
 				}
 				else
-				if( result.__cnt == 1 && result.__cdata!=null && !config.keepCData  ) {
+				if( result.__cnt == 1 && result.__cdata!=null && !config.keepCData  && !config.alwaysObjects ) {
 					result = result.__cdata;
 				}			
 				else			

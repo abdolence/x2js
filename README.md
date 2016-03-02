@@ -31,6 +31,7 @@ The library is very small and has no any dependencies.
  * `xmlElementsFilter : []` - Filter incoming XML elements. You can pass a stringified path (like 'parent.child1.child2'), regexp or function
  * `jsonPropertiesFilter : []` - Filter JSON properties for output XML. You can pass a stringified path (like 'parent.child1.child2'), regexp or function
  * `keepCData : true|false` - If this property defined as false and an XML element has only CData node it will be converted to text without additional property "__cdata". Default is false.
+ * `alwaysObjects : true|false` - If this property defined as true and an XML element is always parsed as Object indipendently of presence of attributes. Default is false.
 
 ## Online demo
 

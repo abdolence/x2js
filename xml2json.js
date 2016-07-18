@@ -20,8 +20,19 @@
  
  Original sources are available at https://github.com/anvog/x2js/tree/Feature-keepOrder
 
+ New options:
+   keepOrder: boolean, default: false - enables the feature
+   orderContainerName: string, default: x2jsOrderContainer - name of the json object that contains the elements which should keep the order
+   arrayOrderItems: array of strings - name of the elements that should keep the order
+   
 
  Example:
+
+   var x2js = new X2JS({
+              	keepOrder: true,
+                orderContainerName: "x2jsOrderContainer",
+                arrayOrderItems: ["a", "b"]
+            });
 
  Source: 
  <?xml version="1.0" encoding="UTF-8"?>
@@ -35,10 +46,10 @@
      b
      a
 
- Outcome: json with keepOrder
+ Outcome: json without keepOrder
+     a
      a
      b
-     a
 
      {"list":{"a":["1","3"],"b":"2"}}
 
@@ -50,10 +61,10 @@
             <b>2</b>
         </list>
 
-  Outcome: without keepOrder xml to json
-    a
+  Outcome: with keepOrder xml to json
     a
     b
+    a
 
     {"list":{"x2jsOrderContainer":[{a:1}, {b:2}, {a:3}]}}
 

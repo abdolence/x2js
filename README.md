@@ -3,6 +3,18 @@ x2js - XML to JSON and vice versa for JavaScript
 This library provides XML to JSON (JavaScript Objects) and vice versa javascript conversion functions.
 The library is very small and has no any dependencies.
 
+
+## Fork:  
+ Adds a new feature to keep the order of an XML for user specific items.
+ Take note: It will add a new container to keep your items in order.
+
+ New config options:
+   * `keepOrder: true|false` Default: false - Enables the feature
+   * `orderContainerName: "<string>"` Default: x2jsOrderContainer - Name of the json object that contains the elements which                                     should keep the order
+   * `arrayOrderItems: []` - Array with the names of the elements that should keep the order
+            
+====
+
 ## API functions
 
  * `new X2JS()` - to create your own instance to access all library functionality

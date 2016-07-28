@@ -582,4 +582,4 @@
 			return VERSION;
 		};	
 	}
-}))
+}));

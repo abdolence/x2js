@@ -38,7 +38,10 @@
 				config.escapeMode = true;
 			}
 			
-			config.attributePrefix = config.attributePrefix || "_";
+			if(config.attributePrefix === undefined) {
+				config.attributePrefix = "_";
+			}
+			
 			config.arrayAccessForm = config.arrayAccessForm || "none";
 			config.emptyNodeForm = config.emptyNodeForm || "text";		
 			

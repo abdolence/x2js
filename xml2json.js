@@ -64,6 +64,10 @@
 			if(config.keepCData === undefined) {
 				config.keepCData = false;
 			}
+			
+			if(config.tags2upperCase === undefined) {
+				config.tags2upperCase = false;
+			}
 		}
 	
 		var DOMNodeTypes = {
@@ -310,7 +314,10 @@
 		}
 		
 		function startTag(jsonObj, element, attrList, closed) {
-			var resultStr = "<"+ ( (jsonObj!=null && jsonObj.__prefix!=null)? (jsonObj.__prefix+":"):"") + element;
+			var elementName = element;
+			if (config.tags2upperCase) {elementName = elementName.toUpperCase();}
+
+			var resultStr = "<"+ ( (jsonObj!=null && jsonObj.__prefix!=null)? (jsonObj.__prefix+":"):"") + elementName;
 			if(attrList!=null) {
 				for(var aidx = 0; aidx < attrList.length; aidx++) {
 					var attrName = attrList[aidx];
@@ -332,7 +339,10 @@
 		}
 		
 		function endTag(jsonObj,elementName) {
-			return "</"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"")+elementName+">";
+			var element = elementName;
+			if (config.tags2upperCase) {element = element.toUpperCase();}
+			
+			return "</"+ (jsonObj.__prefix!=null? (jsonObj.__prefix+":"):"")+element+">";
 		}
 		
 		function endsWith(str, suffix) {

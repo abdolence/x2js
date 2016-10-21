@@ -64,6 +64,7 @@
 			if(config.keepCData === undefined) {
 				config.keepCData = false;
 			}
+			config.parseNumbers = config.parseNumbers || false;
 		}
 	
 		var DOMNodeTypes = {
@@ -275,7 +276,6 @@
 					if(config.arrayAccessForm=="property")
 						delete result["#cdata-section_asArray"];
 				}
-				
 				if( result.__cnt == 0 && config.emptyNodeForm=="text" ) {
 					result = '';
 				}
@@ -293,6 +293,13 @@
 						delete result.__text;
 					}
 				}
+				else
+				if (result.__cnt > 1 && result.__text!=null && /^[-+]?[0-9]*\.?[0-9]+$/.test(result.__text) && config.parseNumbers) {
+					result.__text = parseFloat(result.__text);
+				}
+
+				delete result["#text"];
+
 				delete result.__cnt;			
 				
 				if( config.enableToStringFunc && (result.__text!=null || result.__cdata!=null )) {

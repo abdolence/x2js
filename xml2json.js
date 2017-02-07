@@ -490,6 +490,8 @@
 		
 		this.parseXmlString = function(xmlDocStr) {
 			var isIEParser = window.ActiveXObject || "ActiveXObject" in window;
+			var f = navigator.userAgent.search("Firefox");
+			var isFirefox = (f > -1);			
 			if (xmlDocStr === undefined) {
 				return null;
 			}
@@ -498,7 +500,7 @@
 				var parser=new window.DOMParser();			
 				var parsererrorNS = null;
 				// IE9+ now is here
-				if(!isIEParser) {
+				if(!isIEParser && !isFirefox) {
 					try {
 						parsererrorNS = parser.parseFromString("INVALID", "text/xml").getElementsByTagName("parsererror")[0].namespaceURI;
 					}

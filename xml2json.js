@@ -75,6 +75,7 @@
 		};
 		
 		function initRequiredPolyfills() {		
+            setAcessFormPaths(config.jsonSchema, "");
 		}
 		
 		function getNodeLocalName( node ) {
@@ -173,6 +174,133 @@
 			return d;
 		}
 		
+        function setAcessFormPaths(jsonSchema, path) {
+            if (jsonSchema == null) {
+                return;
+            }
+            for (var prop in jsonSchema) {
+
+                var currSchema = jsonSchema[prop];
+                var srcType = typeof jsonSchema[prop];
+                var propPath = (path == "" ? "" : (path + "."));
+                var newPath = propPath + prop;
+
+                switch (srcType) {
+                    case "object":
+                        if (prop == "0") {
+                            for (var index = 0; index < jsonSchema.length; index++) {
+                                setAcessFormPaths(jsonSchema[index], path);
+                            }
+                        }
+                        else {
+                            if (Array.isArray(currSchema)) {
+                                console.log(newPath + "[]");
+                                config.arrayAccessFormPaths.push(newPath);
+                            }
+                            setAcessFormPaths(currSchema, newPath);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+        };
+
+        function fixJSONTypes(src, target) {
+
+            if (src == null) {
+                return;
+            }
+
+            for (var prop in target) {
+
+                var srcType = typeof src[prop];
+                var targetType = typeof target[prop];
+
+                if (srcType == targetType) {
+                    var currSchema = target[prop];
+                    switch (srcType) {
+                        case "object":
+                            if (prop == "0") {
+                                for (var index = 0; index < src.length; index++) {
+                                    fixJSONTypes(src[index], currSchema)
+                                }
+                            }
+                            else {
+                                fixJSONTypes(src[prop], currSchema)
+                            }
+                            break;
+                        case "string":
+                            var arr = currSchema.split(':')
+                            if (arr.length < 2) {
+                                break;
+                            }
+                            switch (arr[0]) //Target Format
+                            {
+                                case "date":
+                                    //Date Format being expected hence parse this value as date format
+                                    //TODO...
+                                    break;
+                                case "custom":
+                                    var func = window[arr[1]];
+                                    if (func != null) {
+                                        src[prop] = func(src[prop]);
+                                    }
+                                    break;
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+                else {
+                    if (src[prop] == null) {
+                        return;
+                    }
+
+                    try {
+                        switch (targetType) {
+                            case "number":
+                                switch (srcType) {
+                                    case "string":
+                                        var n = parseFloat(src[prop]);
+                                        if (!isNaN(n)) {
+                                            src[prop] = n;
+                                        }
+                                        break;
+                                }
+                                break;
+
+                            case "boolean":
+                                switch (srcType) {
+                                    case "string":
+                                        src[prop] = JSON.parse(src[prop]);
+                                        break;
+                                }
+                                break;
+
+                            case "object":
+                                switch (srcType) {
+                                    case "string":
+                                        if (src[prop] == "") {
+                                            src[prop] = {};
+                                        };
+                                        break;
+                                }
+                                break;
+                            case "string":
+                                //Some Custom String Formats may be defined.
+                            default:
+                                //Don't know how to handle
+                                break;
+                        }
+                    } catch (e) {
+                        //Ignore the if the parsing failed...
+                    }
+                }
+            }
+        };
+
 		function checkFromXmlDateTimePaths(value, childName, fullPath) {
 			if(config.datetimeAccessFormPaths.length > 0) {
 				var path = fullPath.split("\.#")[0];
@@ -558,7 +686,11 @@
 		};
 	
 		this.xml2json = function (xmlDoc) {
-			return parseDOMChildren ( xmlDoc );
+            var retVal = parseDOMChildren(xmlDoc);
+            if (config.jsonSchema != null) {
+                fixJSONTypes(retVal, config.jsonSchema);
+            }
+            return retVal;
 		};
 		
 		this.xml_str2json = function (xmlDocStr) {

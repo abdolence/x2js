@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <title>XML to JSON Parsing with Schema</title>
+    <meta name="author" content="Dileep Miriyala(దిలీపు మిరియాల)" />
+    <style>
+        body {
+            font-family: 'Miriam Fixed';
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            border: 0px solid black;
+        }
+
+        textarea {
+            width: 100%;
+            height: 160px;
+            font-size: 12px;
+            color: blue;
+        }
+
+        .label {
+            font-weight: bold;
+            color: red;
+            font-size: 16px;
+        }
+
+        .right {
+            text-align: right;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <table cellpadding="2" cellspacing="2">
+            <tr>
+                <td style="text-align:right;">
+                    <input type="button" id="btnClear" value="Clear" />
+                </td>
+            </tr>
+
+            <tr>
+                <td class="label">Xml:</td>
+            </tr>
+            <tr>
+                <td>
+                    <textarea id="txtXML"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">JSON Schema:</td>
+            </tr>
+            <tr>
+                <td>
+                    <textarea id="txtSchema"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+
+            <tr>
+                <td>
+                    <input type="button" id="btnGo" value="GO" />
+            </tr>
+            <tr>
+                <td>&nbsp;</td>
+            </tr>
+            <tr>
+                <td class="label">Xml Converted to JSON (using XML2JSON) :</td>
+            </tr>
+            <tr>
+                <td>
+                    <textarea id="txtJSON"></textarea>
+                </td>
+            </tr>
+            <tr>
+                <td class="label">JSON honoring JSON Schema:(Along with Custom Parsing)</td>
+            </tr>
+            <tr>
+                <td>
+                    <textarea id="txtJSONWithSchema"></textarea>
+                </td>
+            </tr>
+
+        </table>
+    </div>
+    <script type="text/javascript" src="xml2json.js"></script>
+    <script type="text/javascript">
+        function registerEvent(E, eventName, elementEventListener) {
+            if (E == null) {
+                return;
+            }
+            if (E.addEventListener != null) {
+                E.addEventListener(eventName, elementEventListener, false);
+            }
+            else if (E.attachEvent != null) {
+                E.attachEvent('on' + eventName, elementEventListener);
+            }
+            else {
+                E['on' + eventName] = elementEventListener;
+            }
+        }
+        function custom(x) {
+            return x + "___________________";
+        }
+        function init() {
+
+            var _xml_ = '<root><childs1><child id="p" /></childs1><childs2 pid="1" my="test"><child id="1" bool="true" /><child id="1.36" /><child /><child h="p" /></childs2></root>';
+            var _json_ = '{"root":{"childs1":{"child":[{"_id":0}]},"childs2":{"child":[{"_id":0,"_bool":true}],"_pid":0,"_my":"custom:custom"}}}';
+
+            document.getElementById("txtXML").value = _xml_;
+            document.getElementById("txtSchema").value = _json_;
+
+            registerEvent(document.getElementById("btnGo"), 'click', go);
+            registerEvent(document.getElementById("btnClear"), 'click', clear);
+            go();
+        }
+
+        function clear() {
+            document.getElementById("txtXML").value = "";
+            document.getElementById("txtSchema").value = "";
+            document.getElementById("txtJSON").value = "";
+            document.getElementById("txtJSONWithSchema").value = "";
+        }
+
+        function go() {
+            var _xml = document.getElementById("txtXML").value.toString();
+            var _schema = document.getElementById("txtSchema").value.toString();
+
+            try {
+                _schema = JSON.parse(_schema);
+            } catch (e) {
+                _schema = null;
+            }
+
+            var _json = new X2JS().xml_str2json(_xml);
+            var _json2 = (_schema == null) ? null : new X2JS({ jsonSchema: _schema }).xml_str2json(_xml);
+
+            document.getElementById("txtSchema").value = _schema == null ? "" : JSON.stringify(_schema, null, '\t')
+            document.getElementById("txtJSON").value = _json == null ? "" : JSON.stringify(_json, null, '\t');
+            document.getElementById("txtJSONWithSchema").value = _json2 == null ? "" : JSON.stringify(_json2, null, '\t');
+
+        }
+        init();
+    </script>
+    <div class="right"><span class="content">~ Dileep Miriyala(దిలీపు మిరియాల)</span></div>
+</body>
+</html>

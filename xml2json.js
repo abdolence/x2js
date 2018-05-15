@@ -32,7 +32,8 @@
 		config = config || {};
 		initConfigDefaults();
 		initRequiredPolyfills();
-		
+		var arrAttrNode=[];
+
 		function initConfigDefaults() {
 			if(config.escapeMode === undefined) {
 				config.escapeMode = true;
@@ -420,6 +421,21 @@
 				return jsonObjPath+"."+jsonPropName;
 		}
 		
+		function addStartMidEnd(start ,mid, end,it){
+			var StartMidEnd="";
+			var a=mid.indexOf("<_attr>")
+			if(a==0){
+				var b=mid.indexOf("</_attr>")
+				StartMidEnd+=start.replace("<"+it,"<"+it+mid.substring(7,b));
+				StartMidEnd+=mid.substring(b+8);
+			}else{
+				StartMidEnd+=start;
+				StartMidEnd+=mid;									
+			}
+			StartMidEnd+=end;
+			return StartMidEnd
+		}
+		
 		function parseJSONArray ( jsonArrRoot, jsonArrObj, attrList, jsonObjPath ) {
 			var result = ""; 
 			if(jsonArrRoot.length == 0) {
@@ -427,9 +443,9 @@
 			}
 			else {
 				for(var arIdx = 0; arIdx < jsonArrRoot.length; arIdx++) {
-					result+=startTag(jsonArrRoot[arIdx], jsonArrObj, parseJSONAttributes(jsonArrRoot[arIdx]), false);
-					result+=parseJSONObject(jsonArrRoot[arIdx], getJsonPropertyPath(jsonObjPath,jsonArrObj));
-					result+=endTag(jsonArrRoot[arIdx],jsonArrObj);
+					result+=addStartMidEnd(startTag(jsonArrRoot[arIdx], jsonArrObj, parseJSONAttributes(jsonArrRoot[arIdx]), false),
+						parseJSONObject(jsonArrRoot[arIdx], getJsonPropertyPath(jsonObjPath,jsonArrObj)),
+						endTag(jsonArrRoot[arIdx],jsonArrObj),jsonArrObj);
 				}
 			}
 			return result;
@@ -439,9 +455,15 @@
 			var result = "";	
 	
 			var elementsCnt = jsonXmlElemCount ( jsonObj );
-			
+
+			var  _pre=" "
+
 			if(elementsCnt > 0) {
 				for( var it in jsonObj ) {
+					if(arrAttrNode.includes(it)){
+						_pre+=(it+'=\"'+jsonObj[it]+'\" ')
+						continue
+					}
 					
 					if(jsonXmlSpecialElem ( jsonObj, it) || (jsonObjPath!="" && !checkJsonObjPropertiesFilter(jsonObj, it, getJsonPropertyPath(jsonObjPath,it))) )
 						continue;			
@@ -460,16 +482,16 @@
 							result+=parseJSONArray( subObj, it, attrList, jsonObjPath );					
 						}
 						else if(subObj instanceof Date) {
-							result+=startTag(subObj, it, attrList, false);
-							result+=subObj.toISOString();
-							result+=endTag(subObj,it);
+							result+=addStartMidEnd(startTag(subObj, it, attrList, false),
+								subObj.toISOString(),
+								endTag(subObj,it),it)
 						}
 						else {
 							var subObjElementsCnt = jsonXmlElemCount ( subObj );
 							if(subObjElementsCnt > 0 || subObj.__text!=null || subObj.__cdata!=null) {
-								result+=startTag(subObj, it, attrList, false);
-								result+=parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it));
-								result+=endTag(subObj,it);
+								result+=addStartMidEnd(startTag(subObj, it, attrList, false)
+									,parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it)),
+									endTag(subObj,it),it);
 							}
 							else {
 								result+=startTag(subObj, it, attrList, true);
@@ -477,17 +499,22 @@
 						}
 					}
 					else {
-						result+=startTag(subObj, it, attrList, false);
-						result+=parseJSONTextObject(subObj);
-						result+=endTag(subObj,it);
+						result+=addStartMidEnd(startTag(subObj, it, attrList, false),
+							parseJSONTextObject(subObj),
+							endTag(subObj,it),it);
 					}
 				}
 			}
 			result+=parseJSONTextObject(jsonObj);
 			
+			if(_pre!=' ')
+				result="<_attr>"+_pre+"</_attr>"+result
+			
 			return result;
 		}
-		
+
+		this.arrAttrNode=arrAttrNode;
+
 		this.parseXmlString = function(xmlDocStr) {
 			var isIEParser = window.ActiveXObject || "ActiveXObject" in window;
 			if (xmlDocStr === undefined) {

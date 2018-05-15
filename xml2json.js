@@ -421,6 +421,21 @@
 				return jsonObjPath+"."+jsonPropName;
 		}
 		
+		function addStartMidEnd(start ,mid, end,it){
+			var StartMidEnd="";
+			var a=mid.indexOf("<_attr>")
+			if(a==0){
+				var b=mid.indexOf("</_attr>")
+				StartMidEnd+=start.replace("<"+it,"<"+it+mid.substring(7,b));
+				StartMidEnd+=mid.substring(b+8);
+			}else{
+				StartMidEnd+=start;
+				StartMidEnd+=mid;									
+			}
+			StartMidEnd+=end;
+			return StartMidEnd
+		}
+		
 		function parseJSONArray ( jsonArrRoot, jsonArrObj, attrList, jsonObjPath ) {
 			var result = ""; 
 			if(jsonArrRoot.length == 0) {
@@ -428,9 +443,9 @@
 			}
 			else {
 				for(var arIdx = 0; arIdx < jsonArrRoot.length; arIdx++) {
-					result+=startTag(jsonArrRoot[arIdx], jsonArrObj, parseJSONAttributes(jsonArrRoot[arIdx]), false);
-					result+=parseJSONObject(jsonArrRoot[arIdx], getJsonPropertyPath(jsonObjPath,jsonArrObj));
-					result+=endTag(jsonArrRoot[arIdx],jsonArrObj);
+					result+=addStartMidEnd(startTag(jsonArrRoot[arIdx], jsonArrObj, parseJSONAttributes(jsonArrRoot[arIdx]), false),
+						parseJSONObject(jsonArrRoot[arIdx], getJsonPropertyPath(jsonObjPath,jsonArrObj)),
+						endTag(jsonArrRoot[arIdx],jsonArrObj),jsonArrObj);
 				}
 			}
 			return result;
@@ -467,25 +482,16 @@
 							result+=parseJSONArray( subObj, it, attrList, jsonObjPath );					
 						}
 						else if(subObj instanceof Date) {
-							result+=startTag(subObj, it, attrList, false);
-							result+=subObj.toISOString();
-							result+=endTag(subObj,it);
+							result+=addStartMidEnd(startTag(subObj, it, attrList, false),
+								subObj.toISOString(),
+								endTag(subObj,it),it)
 						}
 						else {
 							var subObjElementsCnt = jsonXmlElemCount ( subObj );
 							if(subObjElementsCnt > 0 || subObj.__text!=null || subObj.__cdata!=null) {
-								var mid=parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it));
-								var a=mid.indexOf("<_attr>")
-								if(a==0){
-									var b=mid.indexOf("</_attr>");
-									result+=startTag(subObj, it, attrList, false).replace("<"+it,"<"+it+mid.substring(7,b));
-									result+=mid.substring(b+8);
-									
-								}else{
-									result+=startTag(subObj, it, attrList, false);
-									result+=mid;									
-								}
-								result+=endTag(subObj,it);
+								result+=addStartMidEnd(startTag(subObj, it, attrList, false)
+									,parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it)),
+									endTag(subObj,it),it);
 							}
 							else {
 								result+=startTag(subObj, it, attrList, true);
@@ -493,9 +499,9 @@
 						}
 					}
 					else {
-						result+=startTag(subObj, it, attrList, false);
-						result+=parseJSONTextObject(subObj);
-						result+=endTag(subObj,it);
+						result+=addStartMidEnd(startTag(subObj, it, attrList, false),
+							parseJSONTextObject(subObj),
+							endTag(subObj,it),it);
 					}
 				}
 			}

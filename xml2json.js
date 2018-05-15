@@ -32,7 +32,8 @@
 		config = config || {};
 		initConfigDefaults();
 		initRequiredPolyfills();
-		
+		var arrAttrNode=[];
+
 		function initConfigDefaults() {
 			if(config.escapeMode === undefined) {
 				config.escapeMode = true;
@@ -439,9 +440,15 @@
 			var result = "";	
 	
 			var elementsCnt = jsonXmlElemCount ( jsonObj );
-			
+
+			var  _pre=" "
+
 			if(elementsCnt > 0) {
 				for( var it in jsonObj ) {
+					if(arrAttrNode.includes(it)){
+						_pre+=(it+'=\"'+jsonObj[it]+'\" ')
+						continue
+					}
 					
 					if(jsonXmlSpecialElem ( jsonObj, it) || (jsonObjPath!="" && !checkJsonObjPropertiesFilter(jsonObj, it, getJsonPropertyPath(jsonObjPath,it))) )
 						continue;			
@@ -467,8 +474,17 @@
 						else {
 							var subObjElementsCnt = jsonXmlElemCount ( subObj );
 							if(subObjElementsCnt > 0 || subObj.__text!=null || subObj.__cdata!=null) {
-								result+=startTag(subObj, it, attrList, false);
-								result+=parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it));
+								var mid=parseJSONObject(subObj, getJsonPropertyPath(jsonObjPath,it));
+								var a=mid.indexOf("<_attr>")
+								if(a==0){
+									var b=mid.indexOf("</_attr>");
+									result+=startTag(subObj, it, attrList, false).replace("<"+it,"<"+it+mid.substring(7,b));
+									result+=mid.substring(b+8);
+									
+								}else{
+									result+=startTag(subObj, it, attrList, false);
+									result+=mid;									
+								}
 								result+=endTag(subObj,it);
 							}
 							else {
@@ -485,9 +501,14 @@
 			}
 			result+=parseJSONTextObject(jsonObj);
 			
+			if(_pre!=' ')
+				result="<_attr>"+_pre+"</_attr>"+result
+			
 			return result;
 		}
-		
+
+		this.arrAttrNode=arrAttrNode;
+
 		this.parseXmlString = function(xmlDocStr) {
 			var isIEParser = window.ActiveXObject || "ActiveXObject" in window;
 			if (xmlDocStr === undefined) {

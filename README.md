@@ -41,7 +41,7 @@ JSFiddle at http://jsfiddle.net/abdmob/gkxucxrj/1/
 
 ## XML to JSON
 
-```
+```js
 // Create x2js instance with default config
 var x2js = new X2JS();
 var xmlText = "<MyRoot><test>Success</test><test2><item>val1</item><item>val2</item></test2></MyRoot>";
@@ -50,7 +50,7 @@ var jsonObj = x2js.xml_str2json( xmlText );
 
 ## JSON to XML
 
-```
+```js
 // Create x2js instance with default config
 var x2js = new X2JS();
 var jsonObj = { 
@@ -68,7 +68,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Configure XML structure knowledge beforehand
 
-```
+```js
     var x2js = new X2JS({
         arrayAccessFormPaths : [
            "MyArrays.test.item"
@@ -86,7 +86,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Or using the utility function
 
-```
+```js
     var x2js = new X2JS();
     var xmlText = "<MyArrays>"+
             "<test><item>success</item><item>second</item></test>"+
@@ -99,7 +99,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Accessing to XML attributes
 
-```
+```js
     // Create x2js instance with default config
     var x2js = new X2JS();   
 
@@ -117,7 +117,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Configuring a custom prefix to attributes
 
-```
+```js
     var x2js = new X2JS({
         attributePrefix : "$"
     });
@@ -134,7 +134,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Parsing XML with namespaces
 
-```
+```js
     var xmlText = "<testns:MyOperation xmlns:testns='http://www.example.org'>"+
         "<test>Success</test><test2 myAttr='SuccessAttrValueTest2'>"+
         "<item>ddsfg</item><item>dsdgfdgfd</item><item2>testArrSize</item2></test2></testns:MyOperation>";
@@ -145,7 +145,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Creating JSON (for XML) with namespaces (Option 1)
 
-```
+```js
     var testObjC = {
             'm:TestAttrRoot' : {
                 '_tns:m' : 'http://www.example.org',
@@ -162,7 +162,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Creating JSON (for XML) with namespaces (Option 2)
 
-```
+```js
     // Parse JSON object constructed with another NS-style
     var testObjNew = {
             TestAttrRoot : {
@@ -186,7 +186,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Configuring it beforehand
 
-```
+```js
     var x2js = new X2JS({
         datetimeAccessFormPaths : [
            "MyDts.testds" /* Configure it beforehand */
@@ -201,7 +201,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Or using the utility function
 
-```
+```js
     var x2js = new X2JS();
 
     var xmlText = "<MyDts>"+
@@ -216,7 +216,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Parsing AJAX XML response (JQuery sample)
 
-```
+```js
     $.ajax({
         type: "GET",
         url: "/test",
@@ -231,7 +231,7 @@ var xmlAsStr = x2js.json2xml_str( jsonObj );
 
 ## Loading XML and converting to JSON
 
-```
+```js
     function loadXMLDoc(dname) {
         if (window.XMLHttpRequest) {
             xhttp=new XMLHttpRequest();
